@@ -1,0 +1,343 @@
+.home-page {
+  padding-bottom: 48px;
+}
+
+.hero-banner {
+  min-height: 430px;
+  border-radius: 0 0 36px 36px;
+  background:
+    linear-gradient(rgba(30, 20, 10, 0.55), rgba(30, 20, 10, 0.65)),
+    url("https://placekitten.com/1400/600");
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  margin-bottom: 48px;
+}
+
+.hero-content {
+  width: min(900px, 92%);
+  margin: 0 auto;
+  color: white;
+}
+
+.hero-tag {
+  color: #fed7aa;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hero-content h1 {
+  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  max-width: 760px;
+  margin: 12px 0;
+}
+
+.hero-content p {
+  max-width: 620px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 999px;
+  padding: 12px 18px;
+
+  cursor: pointer;
+
+  background: #2563eb;
+  color: white;
+
+  text-decoration: none;
+  font-weight: 600;
+
+  transition: 0.2s ease;
+}
+
+.btn-orange {
+  background: #f97316;
+  color: white;
+}
+
+.btn-orange:hover {
+  background: #ea580c;
+}
+
+.btn-light {
+  background: white;
+  color: #111827;
+}
+
+.btn-light:hover {
+  background: #f3f4f6;
+}
+
+.mission-section {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 48px;
+}
+
+.mission-section h2,
+.preview-section h2 {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.mission-section p {
+  line-height: 1.7;
+  color: #4b5563;
+}
+
+.mission-card {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 24px;
+  padding: 24px;
+}
+
+.section-heading p {
+  color: #f97316;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.preview-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: white;
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+}
+
+.preview-card img {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  object-fit: cover;
+}
+
+.preview-content {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.badge {
+  width: fit-content;
+  background: #ffedd5;
+  color: #c2410c;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.preview-content h3 {
+  font-size: 2rem;
+  margin: 18px 0 8px;
+}
+
+.location-text {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .mission-section,
+  .preview-card {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-banner {
+    min-height: 520px;
+  }
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.navbar {
+  width: min(1200px, 92%);
+  margin: 0 auto;
+  height: 80px;
+
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.navbar-logo {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #f97316;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.navbar-links a {
+  color: #374151;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.navbar-links a:hover {
+  color: #f97316;
+}
+
+.navbar-right {
+  margin-left: auto;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.navbar-auth-link {
+  font-weight: 600;
+  color: #374151;
+}
+
+.navbar-auth-link:hover {
+  color: #f97316;
+}
+
+a {
+  text-decoration: none;
+}
+
+.navbar a {
+  text-decoration: none;
+}
+
+.auth-page {
+  min-height: calc(100vh - 80px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 40px 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 500px;
+
+  background: white;
+
+  border-radius: 28px;
+
+  padding: 40px;
+
+  border: 1px solid #e5e7eb;
+
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+}
+
+.auth-header {
+  margin-bottom: 28px;
+}
+
+.auth-tag {
+  color: #f97316;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.08em;
+
+  margin-bottom: 10px;
+}
+
+.auth-header h1 {
+  font-size: 2.4rem;
+
+  margin-bottom: 10px;
+}
+
+.auth-header p {
+  color: #6b7280;
+
+  line-height: 1.6;
+}
+
+.auth-form {
+  display: grid;
+
+  gap: 18px;
+}
+
+.auth-field {
+  display: grid;
+
+  gap: 8px;
+}
+
+.auth-field label {
+  font-weight: 600;
+
+  color: #374151;
+}
+
+.input {
+  width: 100%;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 14px;
+
+  padding: 14px 16px;
+
+  outline: none;
+
+  transition: 0.2s ease;
+}
+
+.input:focus {
+  border-color: #f97316;
+
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
+}
+
+.auth-footer {
+  margin-top: 24px;
+
+  text-align: center;
+
+  color: #6b7280;
+}
+
+.auth-footer a {
+  color: #f97316;
+
+  font-weight: 600;
+}
