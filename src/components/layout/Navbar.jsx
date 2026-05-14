@@ -1,9 +1,14 @@
 import { Link, NavLink } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/authStore";
 
 export default function Navbar() {
-  const { isAuthenticated, logout } = useAuth();
+  const isAuthenticated = useAuthStore(
+  (state) => state.isAuthenticated
+);
 
+  const logout = useAuthStore(
+  (state) => state.logout
+);
   return (
     <header>
       <nav className="navbar">

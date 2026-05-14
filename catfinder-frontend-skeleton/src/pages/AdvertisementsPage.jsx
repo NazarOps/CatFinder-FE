@@ -1,5 +1,0 @@
-import { useEffect, useState } from "react";
-import AdvertisementCard from "../components/advertisements/AdvertisementCard";
-import { advertisementService } from "../services/advertisementService";
-const fallbackAdvertisements=[{advertisementId:1,title:"Saknad katt i Majorna",description:"Grå katt med vit mage, sågs senast nära Mariaplan.",type:"Lost",location:{city:"Göteborg"}},{advertisementId:2,title:"Upphittad svart katt",description:"Vänlig svart katt hittad nära Backaplan.",type:"Found",location:{city:"Göteborg"}}];
-export default function AdvertisementsPage(){const [advertisements,setAdvertisements]=useState(fallbackAdvertisements);const [error,setError]=useState("");useEffect(()=>{async function load(){try{setAdvertisements(await advertisementService.getAll())}catch{setError("Kunde inte hämta annonser från backend. Visar demo-data.")}}load()},[]);return <section className="page"><h1>Annonser</h1>{error&&<p>{error}</p>}<div className="grid">{advertisements.map((ad)=><AdvertisementCard key={ad.advertisementId} advertisement={ad}/>)}</div></section>}

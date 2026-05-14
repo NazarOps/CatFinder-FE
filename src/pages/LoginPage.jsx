@@ -1,14 +1,31 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useMutation } from "@tanstack/react-query";
+import { authService } from "../services/authService";
+import { useAuthStore } from "../store/authStore";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const [form, setForm] = useState({
     email: "",
     password: "",
+  });
+
+  const loginMutation = useMutation({
+    mutationFn: authService.login,
+    onSuccess: (data) => {
+      setAuth({
+        token: data.token,
+        user: data.user,
+      });
+
+      navigate("/advertisements");
+    },
+    onError: () => {
+      alert("Fel email eller lösenord.");
+    },
   });
 
   function updateField(event) {
@@ -20,15 +37,9 @@ export default function LoginPage() {
     }));
   }
 
-  async function handleSubmit(event) {
+  function handleSubmit(event) {
     event.preventDefault();
-
-    try {
-      await login(form);
-      navigate("/advertisements");
-    } catch {
-      alert("Fel email eller lösenord.");
-    }
+    loginMutation.mutate(form);
   }
 
   return (
@@ -37,40 +48,22 @@ export default function LoginPage() {
         <div className="auth-header">
           <p className="auth-tag">CatFinder</p>
           <h1>Logga in</h1>
-          <p>
-            Logga in för att skapa annonser, kommentera och spara annonser.
-          </p>
+          <p>Logga in för att skapa annonser, kommentera och spara annonser.</p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-field">
             <label>Email</label>
-
-            <input
-              className="input"
-              type="email"
-              name="email"
-              placeholder="example@email.com"
-              value={form.email}
-              onChange={updateField}
-            />
+            <input className="input" type="email" name="email" value={form.email} onChange={updateField} />
           </div>
 
           <div className="auth-field">
             <label>Lösenord</label>
-
-            <input
-              className="input"
-              type="password"
-              name="password"
-              placeholder="********"
-              value={form.password}
-              onChange={updateField}
-            />
+            <input className="input" type="password" name="password" value={form.password} onChange={updateField} />
           </div>
 
-          <button className="btn btn-orange">
-            Logga in
+          <button className="btn btn-orange" disabled={loginMutation.isPending}>
+            {loginMutation.isPending ? "Loggar in..." : "Logga in"}
           </button>
         </form>
 
