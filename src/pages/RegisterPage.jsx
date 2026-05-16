@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { authService } from "../services/authService";
 
+// RegisterPage - registreringsformulär för att skapa nytt konto
 export default function RegisterPage() {
   const navigate = useNavigate();
 
@@ -15,7 +16,6 @@ export default function RegisterPage() {
 
   function updateField(event) {
     const { name, value } = event.target;
-
     setForm((current) => ({
       ...current,
       [name]: value,
@@ -25,7 +25,7 @@ export default function RegisterPage() {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (form.password !== form.confirmPassword) {
+    if (form.Password !== form.ConfirmPassword) {
       alert("Lösenorden matchar inte.");
       return;
     }
@@ -46,39 +46,73 @@ export default function RegisterPage() {
           <p className="auth-tag">CatFinder</p>
           <h1>Registrera konto</h1>
           <p>
-            Skapa ett konto för att lägga upp annonser, kommentera och spara annonser.
+            Skapa ett konto för att lägga upp annonser, kommentera och spara
+            annonser.
           </p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-field">
             <label>Förnamn</label>
-            <input className="input" name="firstName" value={form.firstName} onChange={updateField} />
+            <input
+              className="input"
+              name="firstName"
+              value={form.firstName}
+              onChange={updateField}
+            />
           </div>
 
           <div className="auth-field">
             <label>Efternamn</label>
-            <input className="input" name="lastName" value={form.lastName} onChange={updateField} />
+            <input
+              className="input"
+              name="lastName"
+              value={form.lastName}
+              onChange={updateField}
+            />
           </div>
 
           <div className="auth-field">
             <label>Användarnamn</label>
-            <input className="input" name="username" value={form.username} onChange={updateField} />
+            <input
+              className="input"
+              name="username"
+              value={form.username}
+              onChange={updateField}
+            />
           </div>
 
           <div className="auth-field">
             <label>Email</label>
-            <input className="input" type="email" name="email" value={form.email} onChange={updateField} />
+            <input
+              className="input"
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={updateField}
+            />
           </div>
 
           <div className="auth-field">
             <label>Lösenord</label>
-            <input className="input" type="password" name="password" value={form.password} onChange={updateField} />
+            <input
+              className="input"
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={updateField}
+            />
           </div>
 
           <div className="auth-field">
             <label>Bekräfta lösenord</label>
-            <input className="input" type="password" name="confirmPassword" value={form.confirmPassword} onChange={updateField} />
+            <input
+              className="input"
+              type="password"
+              name="confirmPassword"
+              value={form.confirmPassword}
+              onChange={updateField}
+            />
           </div>
 
           <button className="btn btn-orange">Skapa konto</button>

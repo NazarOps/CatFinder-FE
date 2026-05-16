@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { authService } from "../services/authService";
 import { useAuthStore } from "../store/authStore";
 
+// LoginPage - inloggningsformulär
 export default function LoginPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -20,7 +21,6 @@ export default function LoginPage() {
         token: data.token,
         user: data.user,
       });
-
       navigate("/advertisements");
     },
     onError: () => {
@@ -30,7 +30,6 @@ export default function LoginPage() {
 
   function updateField(event) {
     const { name, value } = event.target;
-
     setForm((current) => ({
       ...current,
       [name]: value,
@@ -48,21 +47,38 @@ export default function LoginPage() {
         <div className="auth-header">
           <p className="auth-tag">CatFinder</p>
           <h1>Logga in</h1>
-          <p>Logga in för att skapa annonser, kommentera och spara annonser.</p>
+          <p>
+            Logga in för att skapa annonser, kommentera och spara annonser.
+          </p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-field">
             <label>Email</label>
-            <input className="input" type="email" name="email" value={form.email} onChange={updateField} />
+            <input
+              className="input"
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={updateField}
+            />
           </div>
 
           <div className="auth-field">
             <label>Lösenord</label>
-            <input className="input" type="password" name="password" value={form.password} onChange={updateField} />
+            <input
+              className="input"
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={updateField}
+            />
           </div>
 
-          <button className="btn btn-orange" disabled={loginMutation.isPending}>
+          <button
+            className="btn btn-orange"
+            disabled={loginMutation.isPending}
+          >
             {loginMutation.isPending ? "Loggar in..." : "Logga in"}
           </button>
         </form>

@@ -1,10 +1,9 @@
 import { Navigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 
+// ProtectedRoute - kräver att användare är inloggad, annars omdirigerar till login
 export default function ProtectedRoute({ children }) {
-  const isAuthenticated = useAuthStore(
-    (state) => state.isAuthenticated
-  );
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
