@@ -1,15 +1,17 @@
 import { Link } from "react-router-dom";
 
-const featuredAdvertisement = {
-  id: 1,
-  title: "Misse saknas i Majorna",
-  description: "Grå katt med vit mage. Sågs senast nära Mariaplan på kvällen.",
-  location: "Göteborg, Majorna",
-  type: "Försvunnen katt",
-  imageUrl: "https://placekitten.com/600/360",
-};
-
+// HomePage - startsida med hero-banner, mission och preview av aktuell annons
 export default function HomePage() {
+  const featuredAdvertisement = {
+    id: 1,
+    title: "Misse saknas i Majorna",
+    description:
+      "Grå katt med vit mage. Sågs senast nära Mariaplan på kvällen.",
+    location: "Göteborg, Majorna",
+    type: "Försvunnen katt",
+    imageUrl: "https://placekitten.com/600/360",
+  };
+
   return (
     <section className="home-page">
       <section className="hero-banner">
@@ -26,7 +28,6 @@ export default function HomePage() {
             <Link className="btn btn-orange" to="/advertisements">
               Visa aktuella annonser
             </Link>
-
             <Link className="btn btn-light" to="/advertisements/create">
               Skapa annons
             </Link>

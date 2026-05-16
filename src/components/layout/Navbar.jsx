@@ -1,14 +1,11 @@
 import { Link, NavLink } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 
+// Navbar - navigationsmeny med länkar och auth-knappar
 export default function Navbar() {
-  const isAuthenticated = useAuthStore(
-  (state) => state.isAuthenticated
-);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const logout = useAuthStore((state) => state.logout);
 
-  const logout = useAuthStore(
-  (state) => state.logout
-);
   return (
     <header>
       <nav className="navbar">
@@ -21,13 +18,8 @@ export default function Navbar() {
 
           {isAuthenticated && (
             <>
-              <NavLink to="/advertisements/create">
-                Skapa annons
-              </NavLink>
-
-              <NavLink to="/saved">
-                Sparade
-              </NavLink>
+              <NavLink to="/advertisements/create">Skapa annons</NavLink>
+              <NavLink to="/saved">Sparade</NavLink>
             </>
           )}
         </div>
@@ -42,7 +34,6 @@ export default function Navbar() {
               <Link className="navbar-auth-link" to="/login">
                 Logga in
               </Link>
-
               <Link className="btn btn-orange" to="/register">
                 Registrera
               </Link>
