@@ -7,17 +7,55 @@ export default function CreateAdvertisementPage() {
     title: "",
     description: "",
     type: "Lost",
-    catName: "",
-    breed: "",
-    furColor: "",
-    city: "",
-    area: "",
     contactPhoneNumber: "",
     contactEmail: "",
+
+    cat: {
+      name: "",
+      breed: "",
+      furColor: "",
+    },
+
+    location: {
+      city: "",
+      area: "",
+    },
   });
 
   function updateField(e) {
     const { name, value } = e.target;
+
+    // Hantera cat.*
+    if (name.startsWith("cat.")) {
+      const field = name.split(".")[1];
+
+      setForm((current) => ({
+        ...current,
+        cat: {
+          ...current.cat,
+          [field]: value,
+        },
+      }));
+
+      return;
+    }
+
+    // Hantera location.*
+    if (name.startsWith("location.")) {
+      const field = name.split(".")[1];
+
+      setForm((current) => ({
+        ...current,
+        location: {
+          ...current.location,
+          [field]: value,
+        },
+      }));
+
+      return;
+    }
+
+    // Hantera vanliga fields
     setForm((current) => ({
       ...current,
       [name]: value,
@@ -26,13 +64,45 @@ export default function CreateAdvertisementPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    await advertisementService.create(form);
-    alert("Annons skapad!");
+
+    try {
+      await advertisementService.create({
+        ...form,
+        type: form.type === "Lost" ? 0 : 1,
+
+      });
+
+      alert("Annons skapad!");
+
+      // Återställ formulär
+      setForm({
+        title: "",
+        description: "",
+        type: "Lost",
+        contactPhoneNumber: "",
+        contactEmail: "",
+
+        cat: {
+          name: "",
+          breed: "",
+          furColor: "",
+        },
+
+        location: {
+          city: "",
+          area: "",
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      alert("Kunde inte skapa annons.");
+    }
   }
 
   return (
     <section className="page">
       <h1>Skapa annons</h1>
+
       <form className="form" onSubmit={handleSubmit}>
         <input
           className="input"
@@ -41,6 +111,7 @@ export default function CreateAdvertisementPage() {
           value={form.title}
           onChange={updateField}
         />
+
         <textarea
           className="input"
           name="description"
@@ -48,6 +119,7 @@ export default function CreateAdvertisementPage() {
           value={form.description}
           onChange={updateField}
         />
+
         <select
           className="input"
           name="type"
@@ -57,41 +129,47 @@ export default function CreateAdvertisementPage() {
           <option value="Lost">Försvunnen katt</option>
           <option value="Found">Upphittad katt</option>
         </select>
+
         <input
           className="input"
-          name="catName"
+          name="cat.name"
           placeholder="Kattens namn"
-          value={form.catName}
+          value={form.cat.name}
           onChange={updateField}
         />
+
         <input
           className="input"
-          name="breed"
+          name="cat.breed"
           placeholder="Ras"
-          value={form.breed}
+          value={form.cat.breed}
           onChange={updateField}
         />
+
         <input
           className="input"
-          name="furColor"
+          name="cat.furColor"
           placeholder="Pälsfärg"
-          value={form.furColor}
+          value={form.cat.furColor}
           onChange={updateField}
         />
+
         <input
           className="input"
-          name="city"
+          name="location.city"
           placeholder="Stad"
-          value={form.city}
+          value={form.location.city}
           onChange={updateField}
         />
+
         <input
           className="input"
-          name="area"
+          name="location.area"
           placeholder="Område"
-          value={form.area}
+          value={form.location.area}
           onChange={updateField}
         />
+
         <input
           className="input"
           name="contactPhoneNumber"
@@ -99,6 +177,7 @@ export default function CreateAdvertisementPage() {
           value={form.contactPhoneNumber}
           onChange={updateField}
         />
+
         <input
           className="input"
           name="contactEmail"
@@ -106,6 +185,7 @@ export default function CreateAdvertisementPage() {
           value={form.contactEmail}
           onChange={updateField}
         />
+
         <button className="btn">Skapa annons</button>
       </form>
     </section>
