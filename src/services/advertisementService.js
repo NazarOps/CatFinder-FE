@@ -4,22 +4,22 @@ import { api } from "./api";
 export const advertisementService = {
   async getAll() {
     const { data } = await api.get("/advertisements");
-    return data;
+    return data.data;
   },
 
   async getById(id) {
     const { data } = await api.get(`/advertisements/${id}`);
-    return data;
+    return data.data;
   },
 
   async create(payload) {
     const { data } = await api.post("/advertisements", payload);
-    return data;
+    return data.data;
   },
 
   async save(id) {
     const { data } = await api.post(`/advertisements/${id}/save`);
-    return data;
+    return data.data;
   },
 
   async unsave(id) {

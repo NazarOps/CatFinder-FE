@@ -9,7 +9,7 @@ export default function HomePage() {
       "Grå katt med vit mage. Sågs senast nära Mariaplan på kvällen.",
     location: "Göteborg, Majorna",
     type: "Försvunnen katt",
-    imageUrl: "https://placekitten.com/600/360",
+    imageUrl: "https://i2.pickpik.com/photos/314/350/399/cat-kitten-cat-baby-young-cat-6aef1bbe5aa8dc9461e4deddbd8ce1d1.jpg",
   };
 
   return (
