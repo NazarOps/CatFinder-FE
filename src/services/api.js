@@ -8,8 +8,10 @@ export const api = axios.create({
 // Interceptor - lägger till auth-token automatiskt på alla requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("catfinder_token");
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
   return config;
 });

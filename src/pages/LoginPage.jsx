@@ -10,7 +10,7 @@ export default function LoginPage() {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const [form, setForm] = useState({
-    email: "",
+    usernameOrEmail: "",
     password: "",
   });
 
@@ -18,8 +18,8 @@ export default function LoginPage() {
     mutationFn: authService.login,
     onSuccess: (data) => {
       setAuth({
-        token: data.token,
-        user: data.user,
+        token: data.data.token,
+        user: data.data.user,
       });
       navigate("/advertisements");
     },
@@ -58,7 +58,7 @@ export default function LoginPage() {
             <input
               className="input"
               type="email"
-              name="email"
+              name="usernameOrEmail"
               value={form.email}
               onChange={updateField}
             />
