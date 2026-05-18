@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 export default function AdvertisementCard({ advertisement }) {
   return (
     <article className="card">
-      <p style={{ margin: 0, color: "#6b7280" }}>
-        {advertisement.type}
+      <p className="ad-type-badge">
+        {advertisement.type === 0 ? "Försvunnen katt" : "Hittad katt"}
       </p>
       <h3>{advertisement.title}</h3>
       <p>{advertisement.description}</p>

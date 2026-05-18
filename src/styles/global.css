@@ -7,7 +7,7 @@
   border-radius: 0 0 36px 36px;
   background:
     linear-gradient(rgba(30, 20, 10, 0.55), rgba(30, 20, 10, 0.65)),
-    url("https://placekitten.com/1400/600");
+    url("https://i2.pickpik.com/photos/314/350/399/cat-kitten-cat-baby-young-cat-6aef1bbe5aa8dc9461e4deddbd8ce1d1.jpg");
   background-size: cover;
   background-position: center;
   display: flex;
@@ -83,6 +83,47 @@
 
 .btn-light:hover {
   background: #f3f4f6;
+}
+
+.page {
+  width: min(1200px, 92%);
+  margin: 0 auto;
+  padding: 40px 0 56px;
+}
+
+.grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+}
+
+.card h3 {
+  margin: 16px 0 10px;
+  font-size: 1.4rem;
+}
+
+.card p {
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.ad-type-badge {
+  width: fit-content;
+  margin: 0;
+  background: #ffedd5;
+  color: #c2410c;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
 .mission-section {

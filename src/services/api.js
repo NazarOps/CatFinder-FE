@@ -2,7 +2,7 @@ import axios from "axios";
 
 // API-instans med base URL från environment variable, standard localhost:5000/api
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://localhost:7050/api",
 });
 
 // Interceptor - lägger till auth-token automatiskt på alla requests
