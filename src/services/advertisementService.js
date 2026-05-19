@@ -25,4 +25,8 @@ export const advertisementService = {
   async unsave(id) {
     await api.delete(`/advertisements/${id}/save`);
   },
+
+  async delete(id) {
+    await api.delete(`/advertisements/${id}`);
+  },
 };

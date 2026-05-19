@@ -4,7 +4,7 @@ import { api } from "./api";
 export const commentService = {
   async getByAdvertisement(advertisementId) {
     const { data } = await api.get(`/advertisements/${advertisementId}/comments`);
-    return data;
+    return data.data ?? [];
   },
 
   async create(advertisementId, payload) {
@@ -12,6 +12,6 @@ export const commentService = {
       `/advertisements/${advertisementId}/comments`,
       payload
     );
-    return data;
+    return data.data;
   },
 };

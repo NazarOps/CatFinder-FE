@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Stop-Process -Id 44112 -Force -Confirm:$false)",
+      "Bash(mkdir -p \"C:/Users/GeorgiaM/Desktop/Programmering/SEEKAT2/APILayer/wwwroot/images\")",
+      "PowerShell(dotnet build \"C:\\\\Users\\\\GeorgiaM\\\\Desktop\\\\Programmering\\\\SEEKAT2\\\\SEEKAT2.slnx\" 2>&1)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\GeorgiaM\\Desktop\\Programmering\\SEEKAT2\\APILayer\\wwwroot"
+    ]
+  }
+}

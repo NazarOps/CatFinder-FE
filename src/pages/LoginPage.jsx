@@ -17,14 +17,24 @@ export default function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
+      const authData = data.data;
       setAuth({
-        token: data.data.token,
-        user: data.data.user,
+        token: authData.token,
+        user: {
+          accountId: authData.accountId,
+          username: authData.username,
+          email: authData.email,
+          role: authData.role,
+        },
       });
       navigate("/advertisements");
     },
-    onError: () => {
-      alert("Fel email eller lösenord.");
+    onError: (error) => {
+      const errors = error.response?.data?.errors;
+      const message = Array.isArray(errors) && errors.length > 0
+        ? errors.join("\n")
+        : error.response?.data?.title || error.message || "Okänt fel";
+      alert("Inloggning misslyckades:\n" + message);
     },
   });
 
@@ -59,7 +69,7 @@ export default function LoginPage() {
               className="input"
               type="email"
               name="usernameOrEmail"
-              value={form.email}
+              value={form.usernameOrEmail}
               onChange={updateField}
             />
           </div>

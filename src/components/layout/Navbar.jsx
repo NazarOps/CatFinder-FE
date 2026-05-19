@@ -14,7 +14,7 @@ export default function Navbar() {
         </Link>
 
         <div className="navbar-links">
-          <NavLink to="/advertisements">Annonser</NavLink>
+          <NavLink to="/advertisements" end>Annonser</NavLink>
 
           {isAuthenticated && (
             <>
