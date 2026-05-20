@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Stop-Process -Id 44112 -Force -Confirm:$false)",
+      "Bash(mkdir -p \"C:/Users/GeorgiaM/Desktop/Programmering/SEEKAT2/APILayer/wwwroot/images\")",
+      "PowerShell(dotnet build \"C:\\\\Users\\\\GeorgiaM\\\\Desktop\\\\Programmering\\\\SEEKAT2\\\\SEEKAT2.slnx\" 2>&1)",
+      "Bash(Select-Object Name)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\mario\\\\Downloads\\\\CatFinder-FE-FrontEndFix\" -Recurse -Filter \"*.tsx\" -o EachObject)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Select-String -Pattern \"\\(carousel|modal|image\\)\")",
+      "Bash(xargs grep -l \"modal\\\\|Modal\\\\|dialog\\\\|Dialog\")",
+      "Bash(ls *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\GeorgiaM\\Desktop\\Programmering\\SEEKAT2\\APILayer\\wwwroot"
+    ]
+  }
+}
