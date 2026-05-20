@@ -1,16 +1,13 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { advertisementService } from "../services/advertisementService";
+import FeaturedCarousel from "../components/advertisements/FeaturedCarousel";
 
-// HomePage - startsida med hero-banner, mission och preview av aktuell annons
 export default function HomePage() {
-  const featuredAdvertisement = {
-    id: 1,
-    title: "Misse saknas i Majorna",
-    description:
-      "Grå katt med vit mage. Sågs senast nära Mariaplan på kvällen.",
-    location: "Göteborg, Majorna",
-    type: "Försvunnen katt",
-    imageUrl: "https://i2.pickpik.com/photos/314/350/399/cat-kitten-cat-baby-young-cat-6aef1bbe5aa8dc9461e4deddbd8ce1d1.jpg",
-  };
+  const { data: advertisements = [] } = useQuery({
+    queryKey: ["advertisements"],
+    queryFn: advertisementService.getAll,
+  });
 
   return (
     <section className="home-page">
@@ -55,33 +52,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="preview-section">
-        <div className="section-heading">
-          <p>Aktuell annons</p>
-          <h2>Senaste efterlysningen</h2>
-        </div>
-
-        <article className="preview-card">
-          <img
-            src={featuredAdvertisement.imageUrl}
-            alt={featuredAdvertisement.title}
-          />
-
-          <div className="preview-content">
-            <span className="badge">{featuredAdvertisement.type}</span>
-            <h3>{featuredAdvertisement.title}</h3>
-            <p>{featuredAdvertisement.description}</p>
-            <p className="location-text">{featuredAdvertisement.location}</p>
-
-            <Link
-              className="btn btn-orange"
-              to={`/advertisements/${featuredAdvertisement.id}`}
-            >
-              Läs mer
-            </Link>
-          </div>
-        </article>
-      </section>
+      <FeaturedCarousel advertisements={advertisements} />
     </section>
   );
 }

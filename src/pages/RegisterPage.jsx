@@ -49,12 +49,11 @@ export default function RegisterPage() {
       // Navigerar användaren till login-sidan efter lyckad registrering
       navigate("/login");
     } catch (error) {
-      console.error(
-        "Registration error:",
-        error.response?.data || error.message || error
-      );
-
-      alert("Kunde inte skapa konto.");
+      const errors = error.response?.data?.errors;
+      const message = Array.isArray(errors) && errors.length > 0
+        ? errors.join("\n")
+        : error.response?.data?.title || error.message || "Okänt fel";
+      alert("Kunde inte skapa konto:\n" + message);
     }
   }
 
