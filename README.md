@@ -1,1 +1,1 @@
-![Project Logo](public/CatFinderLogo.svg)
+![Project Logo](./public/CatFinderLogo.svg)
