@@ -19,6 +19,9 @@ export const useAuthStore = create((set) => ({
   logout: () => {
     localStorage.removeItem("catfinder_token");
     localStorage.removeItem("catfinder_user");
-    set({ token: null, user: null, isAuthenticated: false });
+    set({ 
+      token: null, 
+      user: null, isAuthenticated: false,
+    });
   },
 }));
