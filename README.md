@@ -13,6 +13,10 @@
 ![Axios](https://img.shields.io/badge/Axios-5A29E4?logo=axios&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-black?logo=JSON%20web%20tokens)
 ![MediatR](https://img.shields.io/badge/MediatR-CQRS-blue)
+![Clean Architecture](https://img.shields.io/badge/Clean_Architecture-111827?style=for-the-badge)
+![CQRS](https://img.shields.io/badge/CQRS-0F172A?style=for-the-badge)
+![MediatR](https://img.shields.io/badge/MediatR-1E293B?style=for-the-badge)
+![Repository Pattern](https://img.shields.io/badge/Repository_Pattern-334155?style=for-the-badge)
 ![AutoMapper](https://img.shields.io/badge/AutoMapper-Mapping-orange)
 
 A full-stack lost & found cat platform built with ASP.NET Core, React, and SQL Server.
