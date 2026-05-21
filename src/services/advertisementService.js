@@ -17,18 +17,24 @@ export const advertisementService = {
     return data.data;
   },
 
-  async save(id) {
-    const { data } = await api.post(`/advertisements/${id}/save`);
+  async save(advertisementId) {
+    const { data } = await api.post("/SavedAdvertisements", {
+      advertisementId: advertisementId,
+    });
+
     return data.data;
   },
 
   async unsave(id) {
-    await api.delete(`/advertisements/${id}/save`);
+    await api.delete(`/SavedAdvertisements/${id}`);
   },
 
-  async getSaved() {
-    const { data } = await api.get("/advertisements/saved");
-    return data.data ?? [];
+  async getSaved(accountId) {
+    const { data } = await api.get(`/SavedAdvertisements/account/${accountId}`);
+
+    return data
+      .map((saved) => saved.advertisement)
+      .filter(Boolean);
   },
 
   async delete(id) {

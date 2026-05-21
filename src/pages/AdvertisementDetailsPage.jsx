@@ -91,7 +91,10 @@ export default function AdvertisementDetailsPage() {
       const created = await commentService.create(id, payload);
       setComments((current) => [
         ...current,
-        { username: user?.username ?? user?.email, ...created },
+        { 
+          ...created,
+          username: user?.username ?? user?.email,
+        },
       ]);
     } catch (err) {
       const errors = err.response?.data?.errors;
