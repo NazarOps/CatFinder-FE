@@ -1,1 +1,1 @@
-![Project Logo](assets/CatFinderLogo.svg)
+![Project Logo](public/CatFinderLogo.svg)
