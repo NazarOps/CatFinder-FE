@@ -19,9 +19,9 @@ A full-stack lost & found cat platform built with ASP.NET Core, React, and SQL S
 Users can create advertisements for missing or found cats, comment on listings, save advertisements, and manage their account securely using JWT authentication.
 
 <p align="center">
-  <img src="./public/ImageOne.png" width="500" alt="CatFinder Logo">
+  <img src="./public/imageOne.png" width="500" alt="CatFinder Logo">
 </p>
-<p align="center">
+<p align="left">
   <img src="./public/ImageTwo.png" width="500" alt="CatFinder Logo">
 </p>
 <p align="center">
