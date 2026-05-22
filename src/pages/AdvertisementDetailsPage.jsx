@@ -9,7 +9,7 @@ import { advertisementImageService } from "../services/advertisementImageService
 import { reportService } from "../services/reportService";
 import { api } from "../services/api";
 import { useAuthStore } from "../store/authStore";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // AdvertisementDetailsPage - visar detaljer om en annons med kommentarer
 export default function AdvertisementDetailsPage() {
@@ -21,8 +21,14 @@ export default function AdvertisementDetailsPage() {
   const [advertisement, setAdvertisement] = useState(null);
   const [images, setImages] = useState([]);
   const [comments, setComments] = useState([]);
-  const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const { data: saved = false } = useQuery({
+    queryKey: ["savedAdvertisements", user?.accountId],
+    queryFn: () => advertisementService.getSaved(user.accountId),
+    select: (ads) => ads.some((ad) => ad.advertisementId === Number(id)),
+    enabled: !!user?.accountId,
+  });
   const [error, setError] = useState(null);
   const [printImageUrl, setPrintImageUrl] = useState(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
@@ -38,7 +44,6 @@ export default function AdvertisementDetailsPage() {
       try {
         const ad = await advertisementService.getById(id);
         setAdvertisement(ad);
-        setSaved(ad.isSaved ?? false);
       } catch (err) {
         const errors = err.response?.data?.errors;
         const message = Array.isArray(errors) && errors.length > 0
@@ -77,16 +82,22 @@ export default function AdvertisementDetailsPage() {
   async function handleSave() {
     if (!isAuthenticated) return;
     setSaving(true);
+    const queryKey = ["savedAdvertisements", user?.accountId];
+    // Optimistically flip the cache so the button updates instantly.
+    queryClient.setQueryData(queryKey, (old = []) =>
+      saved
+        ? old.filter((a) => a.advertisementId !== Number(id))
+        : [...old, advertisement]
+    );
     try {
       if (saved) {
         await advertisementService.unsave(id);
-        setSaved(false);
       } else {
         await advertisementService.save(id);
-        setSaved(true);
       }
-      queryClient.invalidateQueries({ queryKey: ["savedAdvertisements"] });
     } catch (err) {
+      // Revert on failure.
+      queryClient.invalidateQueries({ queryKey });
       alert("Kunde inte spara annonsen: " + (err.response?.data?.title || err.message));
     } finally {
       setSaving(false);
@@ -205,27 +216,22 @@ export default function AdvertisementDetailsPage() {
     pdf.save(`${advertisement.title}.pdf`);
   }
 
-  function openModal(action) {
-    setPendingAction(action);
+  function openModal() {
     if (images.length <= 1) {
       const url = images[0]?.imageUrl ?? null;
       setPrintImageUrl(url);
-      if (action === "save") {
-        savePdf(url);
-      } else {
-        requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
-      }
-      return;
+      setPickedUrl(url);
+    } else {
+      setPickedUrl(images[0].imageUrl);
     }
-    setPickedUrl(images[0].imageUrl);
     setShowPrintModal(true);
   }
 
-  function handleModalConfirm() {
+  function handleModalConfirm(action) {
     const url = pickedUrl;
     setPrintImageUrl(url);
     setShowPrintModal(false);
-    if (pendingAction === "save") {
+    if (action === "save") {
       savePdf(url);
     } else {
       requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
@@ -354,24 +360,14 @@ export default function AdvertisementDetailsPage() {
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
           <button
-            onClick={() => openModal("save")}
+            onClick={openModal}
             style={{
               background: "none", border: "1px solid #e5e7eb", color: "#6b7280",
               borderRadius: 999, padding: "8px 18px", cursor: "pointer",
               fontWeight: 600, fontSize: "0.875rem", transition: "all 0.15s ease",
             }}
           >
-            Spara PDF
-          </button>
-          <button
-            onClick={() => openModal("print")}
-            style={{
-              background: "none", border: "1px solid #e5e7eb", color: "#6b7280",
-              borderRadius: 999, padding: "8px 18px", cursor: "pointer",
-              fontWeight: 600, fontSize: "0.875rem", transition: "all 0.15s ease",
-            }}
-          >
-            Skriv ut
+            Skriv ut / Spara PDF
           </button>
           {isAuthenticated && user?.accountId !== advertisement.accountId && (
             <button
@@ -449,7 +445,7 @@ export default function AdvertisementDetailsPage() {
               boxShadow: "0 24px 60px rgba(0,0,0,0.2)",
             }}
           >
-            <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Välj bild för utskrift</h3>
+            <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Välj bild</h3>
 
             <div style={{
               display: "grid",
@@ -490,14 +486,24 @@ export default function AdvertisementDetailsPage() {
                 Avbryt
               </button>
               <button
-                onClick={handleModalConfirm}
+                onClick={() => handleModalConfirm("print")}
+                style={{
+                  background: "none", border: "1px solid #e5e7eb", color: "#374151",
+                  borderRadius: 999, padding: "9px 20px", cursor: "pointer",
+                  fontWeight: 600, fontSize: "0.875rem",
+                }}
+              >
+                Skriv ut
+              </button>
+              <button
+                onClick={() => handleModalConfirm("save")}
                 style={{
                   background: "#f97316", border: "none", color: "white",
                   borderRadius: 999, padding: "9px 20px", cursor: "pointer",
                   fontWeight: 600, fontSize: "0.875rem",
                 }}
               >
-                {pendingAction === "save" ? "Spara PDF" : "Skriv ut"}
+                Spara PDF
               </button>
             </div>
           </div>

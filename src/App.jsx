@@ -11,6 +11,7 @@ import CreateAdvertisementPage from "./pages/CreateAdvertisementPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import SavedAdvertisementsPage from "./pages/SavedAdvertisementsPage";
+import MyAdvertisementsPage from "./pages/MyAdvertisementsPage";
 import AdminPortalPage from "./pages/AdminPortalPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
@@ -73,6 +74,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <SavedAdvertisementsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-advertisements"
+          element={
+            <ProtectedRoute>
+              <MyAdvertisementsPage />
             </ProtectedRoute>
           }
         />

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { advertisementService } from "../services/advertisementService";
 import { advertisementImageService } from "../services/advertisementImageService";
+import { posterService } from "../services/posterService";
 import { useAuthStore } from "../store/authStore";
 
 // CreateAdvertisementPage - formulär för att skapa en ny annons
@@ -43,6 +44,67 @@ export default function CreateAdvertisementPage() {
   const MAX_IMAGES = 5;
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [posterDragOver, setPosterDragOver] = useState(false);
+  const [posterAnalyzing, setPosterAnalyzing] = useState(false);
+  const [posterMessage, setPosterMessage] = useState(null);
+
+  const VALID_CITIES = Object.keys(cityAreas);
+  const VALID_FUR_COLORS = ["Svart", "Vit", "Grå", "Orange", "Brun", "Beige", "Rödbrun", "Blågrå", "Calico"];
+
+  async function analyzePoster(file) {
+    if (!file || !file.type.startsWith("image/")) {
+      setPosterMessage({ type: "error", text: "Filen måste vara en bild (JPG, PNG, WebP, GIF)" });
+      return;
+    }
+    setPosterAnalyzing(true);
+    setPosterMessage(null);
+    try {
+      const result = await posterService.analyze(file);
+      const filled = [];
+
+      setForm(prev => {
+        const next = { ...prev, cat: { ...prev.cat }, location: { ...prev.location } };
+
+        if (result.title)       { next.title = result.title; }
+        if (result.description) { next.description = result.description; }
+        if (result.type === "Lost" || result.type === "Found") { next.type = result.type; }
+        if (result.catName)     { next.cat.name  = result.catName; }
+        if (result.catBreed)    { next.cat.breed = result.catBreed; }
+        if (result.catFurColor && VALID_FUR_COLORS.includes(result.catFurColor)) {
+          next.cat.furColor = result.catFurColor;
+        }
+        if (result.city && VALID_CITIES.includes(result.city)) {
+          next.location.city = result.city;
+          next.location.area = "";
+        }
+        if (result.contactPhoneNumber) { next.contactPhoneNumbers = [result.contactPhoneNumber]; }
+        if (result.contactEmail)       { next.contactEmails = [result.contactEmail]; }
+
+        return next;
+      });
+
+      if (result.title)        filled.push("Titel");
+      if (result.description)  filled.push("Beskrivning");
+      if (result.type === "Lost" || result.type === "Found") filled.push("Typ");
+      if (result.catName)      filled.push("Kattens namn");
+      if (result.catBreed)     filled.push("Ras");
+      if (result.catFurColor && VALID_FUR_COLORS.includes(result.catFurColor)) filled.push("Pälsfärg");
+      if (result.city && VALID_CITIES.includes(result.city)) filled.push("Stad");
+      if (result.contactPhoneNumber) filled.push("Telefon");
+      if (result.contactEmail)       filled.push("Email");
+
+      if (filled.length > 0) {
+        setPosterMessage({ type: "success", text: `Fyllde i: ${filled.join(", ")}` });
+      } else {
+        setPosterMessage({ type: "warn", text: "Kunde inte hitta tillräckligt med information i affischen." });
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || "Analysen misslyckades. Försök igen.";
+      setPosterMessage({ type: "error", text: msg });
+    } finally {
+      setPosterAnalyzing(false);
+    }
+  }
 
   function validate() {
     const errs = {};
@@ -205,6 +267,75 @@ export default function CreateAdvertisementPage() {
 
   return (
     <section className="page">
+      {/* ── Poster Analysis Drop Zone (hidden until OpenAI key is configured) ── */}
+      {false && <div style={{ maxWidth: 700, marginBottom: 24 }}>
+        <label
+          onDragOver={e => { e.preventDefault(); setPosterDragOver(true); }}
+          onDragLeave={() => setPosterDragOver(false)}
+          onDrop={e => {
+            e.preventDefault();
+            setPosterDragOver(false);
+            const file = e.dataTransfer.files[0];
+            if (file) analyzePoster(file);
+          }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            padding: "28px 24px",
+            border: `2px dashed ${posterDragOver ? "#f97316" : "#dcc5b0"}`,
+            borderRadius: 16,
+            background: posterDragOver ? "#fff7ed" : "#faf5f0",
+            cursor: posterAnalyzing ? "default" : "pointer",
+            transition: "border-color 0.15s, background 0.15s",
+          }}
+        >
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            style={{ display: "none" }}
+            disabled={posterAnalyzing}
+            onChange={e => {
+              const file = e.target.files[0];
+              e.target.value = "";
+              if (file) analyzePoster(file);
+            }}
+          />
+          <span style={{ fontSize: "2rem" }}>📋</span>
+          {posterAnalyzing ? (
+            <span style={{ fontWeight: 600, color: "#f97316" }}>Analyserar affisch...</span>
+          ) : (
+            <>
+              <span style={{ fontWeight: 600, color: "#5c3622" }}>Dra och släpp en försvunnen-katt-affisch här</span>
+              <span style={{ fontSize: "0.82rem", color: "#9ca3af" }}>eller klicka för att välja en bild — Claude AI fyller i formuläret åt dig</span>
+            </>
+          )}
+        </label>
+
+        {posterMessage && (
+          <p style={{
+            marginTop: 10,
+            padding: "10px 14px",
+            borderRadius: 10,
+            fontSize: "0.85rem",
+            fontWeight: 500,
+            background: posterMessage.type === "success" ? "#f0fdf4"
+              : posterMessage.type === "warn" ? "#fffbeb"
+              : "#fef2f2",
+            color: posterMessage.type === "success" ? "#166534"
+              : posterMessage.type === "warn" ? "#92400e"
+              : "#991b1b",
+            border: `1px solid ${posterMessage.type === "success" ? "#bbf7d0"
+              : posterMessage.type === "warn" ? "#fde68a"
+              : "#fecaca"}`,
+          }}>
+            {posterMessage.text}
+          </p>
+        )}
+      </div>}
+
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: 24, maxWidth: 700 }}>
 
         {/* ── Katt-kort ── */}

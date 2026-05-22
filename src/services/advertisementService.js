@@ -45,4 +45,9 @@ export const advertisementService = {
   async delete(id) {
     await api.delete(`/advertisements/${id}`);
   },
+
+  async getMine() {
+    const { data } = await api.get("/advertisements/my");
+    return data.data;
+  },
 };

@@ -41,6 +41,7 @@ export default function Navbar() {
           {isAuthenticated && (
             <>
               <NavLink to="/advertisements/create">Skapa annons</NavLink>
+              <NavLink to="/my-advertisements">Mina annonser</NavLink>
               <NavLink to="/saved">Sparade</NavLink>
               {isAdmin && <NavLink to="/admin">Adminportal</NavLink>}
             </>
