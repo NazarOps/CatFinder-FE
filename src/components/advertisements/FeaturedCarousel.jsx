@@ -61,7 +61,7 @@ export default function FeaturedCarousel({ advertisements }) {
   return (
     <section className="preview-section">
       <div className="section-heading">
-        <h2>Senaste efterlysningen</h2>
+        <h2>Senaste efterlysningarna</h2>
       </div>
 
       <CarouselSlide advertisement={top5[index]} />

@@ -34,14 +34,15 @@ export default function SavedAdvertisementsPage() {
 
       {advertisements.length === 0 ? (
         <p style={{ color: "#9ca3af" }}>
-          Du har inga sparade annonser ännu.
+          Inga sparade annonser existerar!
         </p>
       ) : (
         <div className="grid">
           {advertisements.map((advertisement) => (
             <AdvertisementCard
               key={advertisement.advertisementId}
-              advertisement={{ ...advertisement, isSaved: true }}
+              advertisement={advertisement}
+              isSaved={true}
             />
           ))}
         </div>

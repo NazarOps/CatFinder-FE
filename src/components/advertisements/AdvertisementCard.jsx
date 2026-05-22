@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
 import { advertisementService } from "../../services/advertisementService";
+import { advertisementImageService } from "../../services/advertisementImageService";
 
 const furThemes = {
   "Svart":   { bg: "#374151", border: "#1f2937", color: "#f9fafb" },
@@ -21,11 +22,24 @@ const typeStyle = {
   1: { bg: "#f0fdf4", color: "#15803d", label: "🐱 Hittad" },
 };
 
-export default function AdvertisementCard({ advertisement }) {
+export default function AdvertisementCard({ advertisement, isSaved = false }) {
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
-  const [saved, setSaved] = useState(advertisement.isSaved ?? false);
+  const [saved, setSaved] = useState(isSaved);
   const [saving, setSaving] = useState(false);
+  const [hovered, setHovered] = useState(false);
+
+  const { data: fetchedImages = [] } = useQuery({
+    queryKey: ["advertisementImages", advertisement.advertisementId],
+    queryFn: () => advertisementImageService.getByAdvertisement(advertisement.advertisementId),
+    enabled: hovered && !advertisement.primaryImageUrl,
+  });
+
+  const previewImage = advertisement.primaryImageUrl ?? fetchedImages[0]?.imageUrl;
+
+  useEffect(() => {
+    setSaved(isSaved);
+  }, [isSaved]);
 
   const theme = furThemes[advertisement.cat?.furColor] ?? { bg: "#f5ede4", border: "#dcc5b0", color: "#5c3622" };
   const type = typeStyle[advertisement.type] ?? typeStyle[0];
@@ -61,7 +75,26 @@ export default function AdvertisementCard({ advertisement }) {
   }
 
   return (
-    <article className="card" style={{ display: "grid", gap: 12, padding: 0, overflow: "hidden" }}>
+    <article
+      className="card"
+      style={{ display: "grid", gap: 12, padding: 0, overflow: "hidden", position: "relative", zIndex: hovered ? 2 : 1 }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div style={{
+        maxHeight: hovered && previewImage ? 180 : 0,
+        opacity: hovered && previewImage ? 1 : 0,
+        overflow: "hidden",
+        transition: "max-height 0.35s ease, opacity 0.25s ease",
+      }}>
+        {previewImage && (
+          <img
+            src={previewImage}
+            alt={advertisement.title}
+            style={{ width: "100%", height: "180px", objectFit: "cover", display: "block" }}
+          />
+        )}
+      </div>
 
       <div style={{
         background: theme.bg,
