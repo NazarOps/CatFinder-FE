@@ -6,6 +6,7 @@ import PrintAdvertisement from "../components/advertisements/PrintAdvertisement"
 import { advertisementService } from "../services/advertisementService";
 import { commentService } from "../services/commentService";
 import { advertisementImageService } from "../services/advertisementImageService";
+import { reportService } from "../services/reportService";
 import { api } from "../services/api";
 import { useAuthStore } from "../store/authStore";
 import { useQueryClient } from "@tanstack/react-query";
@@ -28,6 +29,9 @@ export default function AdvertisementDetailsPage() {
   const [pickedUrl, setPickedUrl] = useState(null);
   const [pendingAction, setPendingAction] = useState("print"); // "print" | "save"
   const [imageBlobUrls, setImageBlobUrls] = useState({}); // imageUrl → blob: URL
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportComment, setReportComment] = useState("");
+  const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -228,6 +232,42 @@ export default function AdvertisementDetailsPage() {
     }
   }
 
+  async function handleReport() {
+    if (reportComment.trim().length < 5) {
+      alert("Beskriv problemet med minst 5 tecken.");
+      return;
+    }
+    setReporting(true);
+    try {
+      await reportService.create(id, reportComment.trim());
+      setShowReportModal(false);
+      setReportComment("");
+      alert("Tack! Din rapport har skickats till administratörerna.");
+    } catch (err) {
+      const errors = err.response?.data?.errors;
+      const message = Array.isArray(errors) && errors.length > 0
+        ? errors.join("\n")
+        : err.response?.data?.title || err.message || "Okänt fel";
+      alert("Kunde inte skicka rapport:\n" + message);
+    } finally {
+      setReporting(false);
+    }
+  }
+
+  async function handleDeleteComment(commentId) {
+    if (!confirm("Är du säker på att du vill ta bort kommentaren?")) return;
+    try {
+      await commentService.delete(commentId);
+      setComments((current) => current.filter((c) => c.commentId !== commentId));
+    } catch (err) {
+      alert("Kunde inte ta bort kommentaren: " + (err.response?.data?.title || err.message));
+    }
+  }
+
+  async function handleReportComment(commentId, comment) {
+    await reportService.createCommentReport(id, commentId, comment);
+  }
+
   async function handleCreateComment(payload) {
     if (!isAuthenticated) {
       alert("Du måste logga in för att kommentera.");
@@ -350,6 +390,18 @@ export default function AdvertisementDetailsPage() {
               {saved ? "♥ Sparad" : "♡ Spara annons"}
             </button>
           )}
+          {isAuthenticated && user?.accountId !== advertisement.accountId && (
+            <button
+              onClick={() => setShowReportModal(true)}
+              style={{
+                background: "none", border: "1px solid #fca5a5", color: "#ef4444",
+                borderRadius: 999, padding: "8px 18px", cursor: "pointer",
+                fontWeight: 600, fontSize: "0.875rem", transition: "all 0.15s ease",
+              }}
+            >
+              Rapportera
+            </button>
+          )}
           {user?.accountId === advertisement.accountId && (
             <button
               onClick={handleDelete}
@@ -365,7 +417,12 @@ export default function AdvertisementDetailsPage() {
         </div>
       </article>
 
-      <CommentSection comments={comments} onSubmit={handleCreateComment} />
+      <CommentSection
+        comments={comments}
+        onSubmit={handleCreateComment}
+        onDelete={handleDeleteComment}
+        onReport={handleReportComment}
+      />
 
       <PrintAdvertisement
         advertisement={advertisement}
@@ -441,6 +498,67 @@ export default function AdvertisementDetailsPage() {
                 }}
               >
                 {pendingAction === "save" ? "Spara PDF" : "Skriv ut"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showReportModal && (
+        <div
+          onClick={() => setShowReportModal(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9997,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "white", borderRadius: 24, padding: 28,
+              width: "min(480px, 92vw)",
+              display: "flex", flexDirection: "column", gap: 16,
+              boxShadow: "0 24px 60px rgba(0,0,0,0.2)",
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Rapportera annons</h3>
+            <p style={{ margin: 0, color: "#6b7280", fontSize: "0.9rem" }}>
+              Beskriv varför du rapporterar den här annonsen. Administratörerna granskar alla rapporter.
+            </p>
+            <textarea
+              value={reportComment}
+              onChange={(e) => setReportComment(e.target.value)}
+              placeholder="T.ex. spam, felaktig information, olämpligt innehåll..."
+              rows={4}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                border: "1px solid #e5e7eb", borderRadius: 12,
+                padding: "10px 14px", fontSize: "0.9rem",
+                fontFamily: "inherit", resize: "vertical", outline: "none",
+              }}
+            />
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <button
+                onClick={() => { setShowReportModal(false); setReportComment(""); }}
+                style={{
+                  background: "none", border: "1px solid #e5e7eb", color: "#6b7280",
+                  borderRadius: 999, padding: "9px 20px", cursor: "pointer",
+                  fontWeight: 600, fontSize: "0.875rem",
+                }}
+              >
+                Avbryt
+              </button>
+              <button
+                onClick={handleReport}
+                disabled={reporting}
+                style={{
+                  background: "#ef4444", border: "none", color: "white",
+                  borderRadius: 999, padding: "9px 20px", cursor: "pointer",
+                  fontWeight: 600, fontSize: "0.875rem", opacity: reporting ? 0.6 : 1,
+                }}
+              >
+                {reporting ? "Skickar..." : "Skicka rapport"}
               </button>
             </div>
           </div>

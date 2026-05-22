@@ -2,8 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import AdvertisementCard from "../components/advertisements/AdvertisementCard";
 import { advertisementService } from "../services/advertisementService";
+import { useAuthStore } from "../store/authStore";
 
 export default function AdvertisementsPage() {
+  const user = useAuthStore((state) => state.user);
   const [filterCity, setFilterCity] = useState("");
   const [filterArea, setFilterArea] = useState("");
 
@@ -14,6 +16,13 @@ export default function AdvertisementsPage() {
   } = useQuery({
     queryKey: ["advertisements"],
     queryFn: advertisementService.getAll,
+  });
+
+  const { data: savedIds = new Set() } = useQuery({
+    queryKey: ["savedAdvertisements", user?.accountId],
+    queryFn: () => advertisementService.getSaved(user.accountId),
+    select: (ads) => new Set(ads.map((ad) => ad.advertisementId)),
+    enabled: !!user?.accountId,
   });
 
   const cities = useMemo(() => {
@@ -96,6 +105,7 @@ export default function AdvertisementsPage() {
             <AdvertisementCard
               key={advertisement.advertisementId}
               advertisement={advertisement}
+              isSaved={savedIds.has(advertisement.advertisementId)}
             />
           ))}
         </div>

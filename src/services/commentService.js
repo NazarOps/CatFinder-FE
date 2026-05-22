@@ -9,11 +9,14 @@ export const commentService = {
 
   async create(advertisementId, payload) {
     const body = { ...payload, advertisementId: Number(advertisementId) };
-    console.log("POST comment body:", body);
     const { data } = await api.post(
       `/advertisements/${advertisementId}/comments`,
       body
     );
     return data.data;
+  },
+
+  async delete(commentId) {
+    await api.delete(`/comments/${commentId}`);
   },
 };
