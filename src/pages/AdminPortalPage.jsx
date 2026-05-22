@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminService } from "../services/adminService";
 
@@ -132,7 +133,16 @@ export default function AdminPortalPage() {
                       ].join(" ").trim()}
                     >
                       <td className="admin-cell-id">#{ad.advertisementId}</td>
-                      <td className="admin-cell-title">{ad.title}</td>
+                      <td className="admin-cell-title">
+                        <Link
+                          to={`/advertisements/${ad.advertisementId}`}
+                          style={{ color: "#111827", textDecoration: "none", fontWeight: 500 }}
+                          onMouseEnter={e => e.target.style.textDecoration = "underline"}
+                          onMouseLeave={e => e.target.style.textDecoration = "none"}
+                        >
+                          {ad.title}
+                        </Link>
+                      </td>
                       <td>
                         <span className={`admin-badge admin-badge--${ad.type === 0 ? "lost" : "found"}`}>
                           {ad.type === 0 ? "Borttappad" : "Hittad"}

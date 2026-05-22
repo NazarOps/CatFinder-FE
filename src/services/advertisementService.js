@@ -2,8 +2,13 @@ import { api } from "./api";
 
 // advertisementService - hämta, skapa och hantera annonser
 export const advertisementService = {
-  async getAll() {
-    const { data } = await api.get("/advertisements");
+  async getAll({ skip = 0, take = 12, city = "", type } = {}) {
+    const params = new URLSearchParams();
+    if (skip) params.set("skip", skip);
+    if (take !== 12) params.set("take", take);
+    if (city) params.set("city", city);
+    if (type != null) params.set("type", type);
+    const { data } = await api.get(`/advertisements?${params}`);
     return data.data;
   },
 
@@ -39,5 +44,10 @@ export const advertisementService = {
 
   async delete(id) {
     await api.delete(`/advertisements/${id}`);
+  },
+
+  async getMine() {
+    const { data } = await api.get("/advertisements/my");
+    return data.data;
   },
 };
