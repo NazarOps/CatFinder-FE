@@ -74,6 +74,17 @@ Planned deployment features include:
 ## Live Demo
 Live deployment currently in progress.
 
+## Future Plans
+
+CatFinder is still under active development, and we plan to continue expanding the platform over time.
+
+Some planned future improvements include:
+- Advanced search and filtering
+- Geolocation and map integration
+- Real-time notifications
+- Public cloud deployment
+- Support for broader regional and international communities
+
 ## Special Thanks
 
 CatFinder was built collaboratively as a team effort.  
