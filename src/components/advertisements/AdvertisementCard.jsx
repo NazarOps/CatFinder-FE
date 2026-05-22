@@ -77,7 +77,7 @@ export default function AdvertisementCard({ advertisement, isSaved = false }) {
   return (
     <article
       className="card"
-      style={{ display: "grid", gap: 12, padding: 0, overflow: "hidden", position: "relative", zIndex: hovered ? 2 : 1 }}
+      style={{ display: "grid", gap: 0, padding: 0, overflow: "hidden", position: "relative", zIndex: hovered ? 2 : 1 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -117,7 +117,7 @@ export default function AdvertisementCard({ advertisement, isSaved = false }) {
         }}>{type.label}</span>
       </div>
 
-      <div style={{ padding: "0 20px 20px", display: "grid", gap: 8 }}>
+      <div style={{ padding: "5px 20px 20px", display: "grid", gap: 8 }}>
         <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
           {advertisement.primaryImageUrl && (
             <img
