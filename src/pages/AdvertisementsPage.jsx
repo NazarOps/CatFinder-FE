@@ -1,8 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import AdvertisementCard from "../components/advertisements/AdvertisementCard";
 import { advertisementService } from "../services/advertisementService";
 import { useAuthStore } from "../store/authStore";
+
+const PAGE_SIZE = 12;
 
 export default function AdvertisementsPage() {
   const user = useAuthStore((state) => state.user);
@@ -10,12 +12,18 @@ export default function AdvertisementsPage() {
   const [filterArea, setFilterArea] = useState("");
 
   const {
-    data: advertisements = [],
+    data,
     isLoading,
     isError,
-  } = useQuery({
-    queryKey: ["advertisements"],
-    queryFn: advertisementService.getAll,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["advertisements", filterCity],
+    queryFn: ({ pageParam = 0 }) =>
+      advertisementService.getAll({ skip: pageParam, take: PAGE_SIZE, city: filterCity }),
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < PAGE_SIZE ? undefined : allPages.length * PAGE_SIZE,
   });
 
   const { data: savedIds = new Set() } = useQuery({
@@ -25,29 +33,26 @@ export default function AdvertisementsPage() {
     enabled: !!user?.accountId,
   });
 
-  const cities = useMemo(() => {
-    const unique = new Set(advertisements.map(a => a.location?.city).filter(Boolean));
-    return [...unique].sort();
-  }, [advertisements]);
+  const allAdvertisements = useMemo(
+    () => data?.pages.flat() ?? [],
+    [data]
+  );
 
   const areas = useMemo(() => {
     if (!filterCity) return [];
     const unique = new Set(
-      advertisements
-        .filter(a => a.location?.city === filterCity)
-        .map(a => a.location?.area)
+      allAdvertisements
+        .filter((a) => a.location?.city === filterCity)
+        .map((a) => a.location?.area)
         .filter(Boolean)
     );
     return [...unique].sort();
-  }, [advertisements, filterCity]);
+  }, [allAdvertisements, filterCity]);
 
   const filtered = useMemo(() => {
-    return advertisements.filter(a => {
-      if (filterCity && a.location?.city !== filterCity) return false;
-      if (filterArea && a.location?.area !== filterArea) return false;
-      return true;
-    });
-  }, [advertisements, filterCity, filterArea]);
+    if (!filterArea) return allAdvertisements;
+    return allAdvertisements.filter((a) => a.location?.area === filterArea);
+  }, [allAdvertisements, filterArea]);
 
   function handleCityChange(e) {
     setFilterCity(e.target.value);
@@ -55,7 +60,7 @@ export default function AdvertisementsPage() {
   }
 
   if (isLoading) return <section className="page">Laddar annonser...</section>;
-  if (isError)   return <section className="page">Kunde inte hämta annonser.</section>;
+  if (isError) return <section className="page">Kunde inte hämta annonser.</section>;
 
   return (
     <section className="page" style={{ display: "grid", gap: 24 }}>
@@ -68,7 +73,7 @@ export default function AdvertisementsPage() {
           style={{ width: "auto", minWidth: 180 }}
         >
           <option value="">Alla städer</option>
-          {cities.map(city => (
+          {[...new Set(allAdvertisements.map((a) => a.location?.city).filter(Boolean))].sort().map((city) => (
             <option key={city}>{city}</option>
           ))}
         </select>
@@ -76,12 +81,12 @@ export default function AdvertisementsPage() {
         <select
           className="input"
           value={filterArea}
-          onChange={e => setFilterArea(e.target.value)}
+          onChange={(e) => setFilterArea(e.target.value)}
           disabled={!filterCity || areas.length === 0}
           style={{ width: "auto", minWidth: 180 }}
         >
           <option value="">{filterCity ? "Alla områden" : "Välj stad först"}</option>
-          {areas.map(area => (
+          {areas.map((area) => (
             <option key={area}>{area}</option>
           ))}
         </select>
@@ -101,13 +106,26 @@ export default function AdvertisementsPage() {
         <p style={{ color: "#9ca3af" }}>Inga annonser hittades.</p>
       ) : (
         <div className="grid">
-          {filtered.map(advertisement => (
+          {filtered.map((advertisement) => (
             <AdvertisementCard
               key={advertisement.advertisementId}
               advertisement={advertisement}
               isSaved={savedIds.has(advertisement.advertisementId)}
             />
           ))}
+        </div>
+      )}
+
+      {hasNextPage && (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <button
+            className="btn btn-light"
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            style={{ minWidth: 160 }}
+          >
+            {isFetchingNextPage ? "Laddar..." : "Ladda fler"}
+          </button>
         </div>
       )}
 
