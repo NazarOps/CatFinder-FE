@@ -16,22 +16,29 @@ main {
 
 /* Mobile first */
 .container {
-  width: 100%;
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* Tablet */
 @media (min-width: 768px) {
   .container {
-    width: 80%;
-    margin: 0 auto;
+    width: 85%;
   }
 }
 
 /* Desktop */
 @media (min-width: 1024px) {
   .container {
-    width: 60%;
-    margin: 0 auto;
+    width: 80%;
+  }
+}
+
+/* Large Desktop */
+@media (min-width: 1440px) {
+  .container {
+    width: 70%;
   }
 }
 
