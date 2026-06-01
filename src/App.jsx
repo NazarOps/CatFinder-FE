@@ -10,6 +10,8 @@ import AdvertisementDetailsPage from "./pages/AdvertisementDetailsPage";
 import CreateAdvertisementPage from "./pages/CreateAdvertisementPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import SavedAdvertisementsPage from "./pages/SavedAdvertisementsPage";
 import MyAdvertisementsPage from "./pages/MyAdvertisementsPage";
 import AdminPortalPage from "./pages/AdminPortalPage";
@@ -38,7 +40,9 @@ export default function App() {
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
         osc.start(ctx.currentTime);
         osc.stop(ctx.currentTime + 0.06);
-      } catch (_) {}
+      } catch {
+        // Audio feedback is non-critical.
+      }
     }
 
     function handleClick(e) {
@@ -61,6 +65,9 @@ export default function App() {
         />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
+        <Route path="/resetpassword" element={<ResetPasswordPage />} />
+        <Route path="/resetpassword/:token" element={<ResetPasswordPage />} />
         <Route
           path="/advertisements/create"
           element={
