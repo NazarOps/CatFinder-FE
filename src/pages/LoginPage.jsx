@@ -95,8 +95,8 @@ export default function LoginPage() {
 
         <div className="auth-footer">
           <p>
-            Har du inget konto?
-            <Link to="/register"> Registrera dig</Link>
+            Glömt lösenord?
+            <Link to="/forgotpassword"> Återställ lösenord</Link>
           </p>
         </div>
       </div>
