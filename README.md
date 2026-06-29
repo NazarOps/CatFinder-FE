@@ -72,7 +72,7 @@ Planned deployment features include:
 - Production-ready API hosting
 
 ## Live Demo
-Live deployment currently in progress.
+https://catfinder.site
 
 ## Future Plans
 
