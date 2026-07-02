@@ -39,7 +39,7 @@ export const api = axios.create({
   baseURL: apiBaseUrl,
 });
 
-console.log("API URL:", apiBaseUrl);
+
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("catfinder_token");
