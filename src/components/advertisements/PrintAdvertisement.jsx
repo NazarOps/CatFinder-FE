@@ -1,5 +1,6 @@
 import { QRCodeSVG } from "qrcode.react";
 import { createPortal } from "react-dom";
+import { resolveBackendAssetUrl } from "../../services/api";
 
 const furThemes = {
   "Svart":   { bg: "#374151", border: "#1f2937", color: "#f9fafb" },
@@ -36,7 +37,7 @@ export default function PrintAdvertisement({ advertisement, images, advertisemen
           {/* Image */}
           {firstImage && (
             <img
-              src={firstImage}
+              src={resolveBackendAssetUrl(firstImage)}
               alt=""
               className="print-image"
             />

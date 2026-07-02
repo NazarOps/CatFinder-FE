@@ -6,10 +6,19 @@ export const adminService = {
     return data.data;
   },
 
-  async setVisibility(id, isVisible) {
+  async updateModerationStatus(id, moderationStatus) {
     const { data } = await api.put(
-      `/advertisements/${id}/visibility`,
-      isVisible,
+      `/advertisements/${id}/moderation-status`,
+      moderationStatus,
+      { headers: { "Content-Type": "application/json" } }
+    );
+    return data.data;
+  },
+
+  async updateAdvertisementStatus(id, status) {
+    const { data } = await api.put(
+      `/advertisements/${id}/status`,
+      status,
       { headers: { "Content-Type": "application/json" } }
     );
     return data.data;

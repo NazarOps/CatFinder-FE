@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { resolveBackendAssetUrl } from "../../services/api";
 
 export default function ImageCarousel({ images }) {
   const [active, setActive] = useState(0);
@@ -28,7 +29,7 @@ export default function ImageCarousel({ images }) {
       }}
     >
       <img
-        src={images[active].imageUrl}
+        src={resolveBackendAssetUrl(images[active].imageUrl)}
         alt=""
         onClick={(e) => e.stopPropagation()}
         style={{
@@ -92,7 +93,7 @@ export default function ImageCarousel({ images }) {
     <>
       <div style={{ position: "relative", borderRadius: 24, overflow: "hidden", background: "#f3f4f6" }}>
         <img
-          src={images[active].imageUrl}
+          src={resolveBackendAssetUrl(images[active].imageUrl)}
           alt=""
           onClick={() => setModalOpen(true)}
           style={{ width: "100%", height: 420, objectFit: "cover", display: "block", cursor: "zoom-in" }}

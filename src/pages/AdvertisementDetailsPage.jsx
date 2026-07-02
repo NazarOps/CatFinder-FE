@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import CommentSection from "../components/comments/CommentSection";
 import ImageCarousel from "../components/advertisements/ImageCarousel";
 import PrintAdvertisement from "../components/advertisements/PrintAdvertisement";
@@ -7,21 +8,99 @@ import { advertisementService } from "../services/advertisementService";
 import { commentService } from "../services/commentService";
 import { advertisementImageService } from "../services/advertisementImageService";
 import { reportService } from "../services/reportService";
-import { api } from "../services/api";
+import { api, resolveBackendAssetUrl } from "../services/api";
 import { useAuthStore } from "../store/authStore";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-// AdvertisementDetailsPage - visar detaljer om en annons med kommentarer
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Could not read image blob"));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function waitForImageToLoad(image) {
+  if (!image) return;
+  if (image.complete && image.naturalWidth > 0) return;
+
+  if (typeof image.decode === "function") {
+    try {
+      await image.decode();
+      if (image.naturalWidth > 0) return;
+    } catch {
+      // Fall through to load/error events.
+    }
+  }
+
+  await new Promise((resolve) => {
+    const finish = () => resolve();
+    image.addEventListener("load", finish, { once: true });
+    image.addEventListener("error", finish, { once: true });
+  });
+}
+
+async function setImageSourceAndWait(image, src) {
+  if (!image || !src) return;
+
+  if (image.currentSrc === src || image.getAttribute("src") === src) {
+    await waitForImageToLoad(image);
+    return;
+  }
+
+  await new Promise((resolve) => {
+    const finish = () => resolve();
+    image.addEventListener("load", finish, { once: true });
+    image.addEventListener("error", finish, { once: true });
+    image.setAttribute("src", src);
+  });
+
+  if (typeof image.decode === "function") {
+    try {
+      await image.decode();
+    } catch {
+      // Best effort after the load event.
+    }
+  }
+}
+
+function restoreInlineStyle(element, previousStyle) {
+  if (!element) return;
+  if (previousStyle === null) {
+    element.removeAttribute("style");
+    return;
+  }
+
+  element.setAttribute("style", previousStyle);
+}
+
+async function getPrintableImageUrl(imageUrl) {
+  if (!imageUrl) return null;
+  if (/^(blob:|data:)/i.test(imageUrl)) return imageUrl;
+
+  const absoluteImageUrl = resolveBackendAssetUrl(imageUrl);
+  const { data } = await api.get(absoluteImageUrl, { responseType: "blob" });
+  return blobToDataUrl(data);
+}
+
 export default function AdvertisementDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
+
   const [advertisement, setAdvertisement] = useState(null);
   const [images, setImages] = useState([]);
   const [comments, setComments] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [printImageUrl, setPrintImageUrl] = useState(null);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [pickedUrl, setPickedUrl] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportComment, setReportComment] = useState("");
+  const [reporting, setReporting] = useState(false);
 
   const { data: saved = false } = useQuery({
     queryKey: ["savedAdvertisements", user?.accountId],
@@ -29,15 +108,6 @@ export default function AdvertisementDetailsPage() {
     select: (ads) => ads.some((ad) => ad.advertisementId === Number(id)),
     enabled: !!user?.accountId,
   });
-  const [error, setError] = useState(null);
-  const [printImageUrl, setPrintImageUrl] = useState(null);
-  const [showPrintModal, setShowPrintModal] = useState(false);
-  const [pickedUrl, setPickedUrl] = useState(null);
-  const [pendingAction, setPendingAction] = useState("print"); // "print" | "save"
-  const [imageBlobUrls, setImageBlobUrls] = useState({}); // imageUrl → blob: URL
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [reportComment, setReportComment] = useState("");
-  const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -56,39 +126,31 @@ export default function AdvertisementDetailsPage() {
       try {
         setComments(await commentService.getByAdvertisement(id));
       } catch {
-        // kommentarer är inte kritiska — visa annonsen ändå
+        // Comments are optional for the page.
       }
 
       try {
-        const fetchedImages = await advertisementImageService.getByAdvertisement(id);
-        setImages(fetchedImages);
-        // Pre-fetch each image as a blob using the authenticated client.
-        // blob: URLs are same-origin, so canvas.toDataURL() works without CORS issues.
-        const blobUrls = {};
-        await Promise.all(fetchedImages.map(async (img) => {
-          try {
-            const { data } = await api.get(img.imageUrl, { responseType: "blob" });
-            blobUrls[img.imageUrl] = URL.createObjectURL(data);
-          } catch { /* image pre-fetch failed, will be skipped in PDF */ }
-        }));
-        setImageBlobUrls(blobUrls);
+        setImages(await advertisementImageService.getByAdvertisement(id));
       } catch {
-        // bilder är inte kritiska — visa annonsen ändå
+        // Images are optional for the page.
       }
     }
+
     load();
   }, [id]);
 
   async function handleSave() {
     if (!isAuthenticated) return;
+
     setSaving(true);
     const queryKey = ["savedAdvertisements", user?.accountId];
-    // Optimistically flip the cache so the button updates instantly.
+
     queryClient.setQueryData(queryKey, (old = []) =>
       saved
-        ? old.filter((a) => a.advertisementId !== Number(id))
+        ? old.filter((ad) => ad.advertisementId !== Number(id))
         : [...old, advertisement]
     );
+
     try {
       if (saved) {
         await advertisementService.unsave(id);
@@ -96,7 +158,6 @@ export default function AdvertisementDetailsPage() {
         await advertisementService.save(id);
       }
     } catch (err) {
-      // Revert on failure.
       queryClient.invalidateQueries({ queryKey });
       alert("Kunde inte spara annonsen: " + (err.response?.data?.title || err.message));
     } finally {
@@ -106,6 +167,7 @@ export default function AdvertisementDetailsPage() {
 
   async function handleDelete() {
     if (!confirm("Är du säker på att du vill ta bort annonsen?")) return;
+
     try {
       await advertisementService.delete(id);
       navigate("/advertisements");
@@ -114,106 +176,91 @@ export default function AdvertisementDetailsPage() {
     }
   }
 
-  const FUR_THEMES = {
-    "Svart":   { bg: "#374151", color: "#f9fafb" },
-    "Vit":     { bg: "#f9fafb", color: "#374151" },
-    "Grå":     { bg: "#e5e7eb", color: "#374151" },
-    "Orange":  { bg: "#fff7ed", color: "#c2410c" },
-    "Brun":    { bg: "#fef0d0", color: "#7c3a00" },
-    "Beige":   { bg: "#fefce8", color: "#854d0e" },
-    "Rödbrun": { bg: "#fef2e4", color: "#9a3412" },
-    "Blågrå":  { bg: "#f0f4f8", color: "#334155" },
-    "Calico":  { bg: "#fff7ed", color: "#c2410c" },
-  };
-
-  async function savePdf(selectedImg) {
-    const [{ jsPDF }, QRCode] = await Promise.all([
+  async function savePdf(selectedImageUrl = null) {
+    const [{ jsPDF }, { default: html2canvas }] = await Promise.all([
       import("jspdf"),
-      import("qrcode"),
+      import("html2canvas"),
     ]);
 
-    const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-    const W = 210, margin = 18, contentW = 210 - 36;
-    const hex = (h) => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
-    let y = 0;
-
-    // Header bar
-    const theme = FUR_THEMES[advertisement.cat?.furColor] ?? { bg: "#f5ede4", color: "#5c3622" };
-    const [bgR,bgG,bgB] = hex(theme.bg);
-    const [fgR,fgG,fgB] = hex(theme.color);
-    pdf.setFillColor(bgR,bgG,bgB);
-    pdf.rect(0, 0, W, 34, "F");
-    pdf.setTextColor(fgR,fgG,fgB);
-    pdf.setFontSize(7); pdf.setFont("helvetica","bold");
-    pdf.text("CATFINDER", margin, 11);
-    pdf.setFontSize(20);
-    pdf.text(advertisement.title, margin, 26, { maxWidth: contentW });
-    y = 42;
-
-    // Photo — use pre-fetched blob: URL (same-origin, no canvas taint)
-    if (selectedImg) {
-      const blobUrl = imageBlobUrls[selectedImg];
-      if (blobUrl) {
-        const dataUrl = await new Promise((resolve) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement("canvas");
-            canvas.width = img.naturalWidth;
-            canvas.height = img.naturalHeight;
-            canvas.getContext("2d").drawImage(img, 0, 0);
-            resolve(canvas.toDataURL("image/jpeg", 0.92));
-          };
-          img.onerror = () => resolve(null);
-          img.src = blobUrl;
-        });
-        if (dataUrl) {
-          pdf.addImage(dataUrl, "JPEG", margin, y, contentW, 72);
-          y += 78;
-        }
-      }
+    const printRoot = document.getElementById("print-advertisement");
+    const printSheet = printRoot?.querySelector(".print-sheet");
+    if (!printRoot || !printSheet) {
+      alert("Kunde inte skapa PDF-förhandsvisningen.");
+      return;
     }
 
-    // Description
-    if (advertisement.description) {
-      pdf.setTextColor(51,51,51); pdf.setFontSize(10); pdf.setFont("helvetica","normal");
-      const lines = pdf.splitTextToSize(advertisement.description, contentW);
-      pdf.text(lines, margin, y);
-      y += lines.length * 5.5 + 8;
-    }
+    const previousRootStyle = printRoot.getAttribute("style");
+    const previousSheetStyle = printSheet.getAttribute("style");
+    const image = printRoot.querySelector(".print-image");
+    const previousImageSrc = image?.getAttribute("src") ?? null;
 
-    // Divider
-    pdf.setDrawColor(229,231,235); pdf.line(margin, y, W-margin, y); y += 7;
-
-    // Info columns
-    const cols = [
-      { label: "KATT",    rows: [advertisement.cat?.name ?? "—", advertisement.cat?.breed ?? "Okänd ras", advertisement.cat?.furColor ?? ""] },
-      { label: "PLATS",   rows: [advertisement.location?.city ?? "—", advertisement.location?.area ?? ""] },
-      { label: "KONTAKT", rows: [advertisement.contactPhoneNumber ?? "Ej angivet", advertisement.contactEmail ?? "Ej angivet"] },
-    ];
-    const colW = contentW / 3;
-    cols.forEach(({ label, rows }, i) => {
-      const x = margin + i * colW;
-      pdf.setTextColor(156,163,175); pdf.setFontSize(7); pdf.setFont("helvetica","bold");
-      pdf.text(label, x, y);
-      pdf.setTextColor(17,24,39); pdf.setFontSize(10); pdf.setFont("helvetica","bold");
-      pdf.text(rows[0], x, y+6);
-      pdf.setFont("helvetica","normal"); pdf.setTextColor(107,114,128); pdf.setFontSize(9);
-      rows.slice(1).forEach((row, j) => { if (row) pdf.text(row, x, y+12+j*5); });
+    Object.assign(printRoot.style, {
+      display: "block",
+      position: "fixed",
+      left: "-10000px",
+      top: "0",
+      width: "794px",
+      margin: "0",
+      padding: "0",
+      background: "#ffffff",
+      opacity: "1",
+      pointerEvents: "none",
+      zIndex: "-1",
     });
-    y += 30;
 
-    // Divider
-    pdf.setDrawColor(229,231,235); pdf.line(margin, y, W-margin, y); y += 8;
+    Object.assign(printSheet.style, {
+      width: "794px",
+      background: "#ffffff",
+    });
 
-    // QR code + URL
-    const qrDataUrl = await QRCode.toDataURL(window.location.href, { margin: 1 });
-    pdf.addImage(qrDataUrl, "PNG", margin, y, 28, 28);
-    pdf.setTextColor(17,24,39); pdf.setFontSize(9); pdf.setFont("helvetica","bold");
-    pdf.text("Scanna för att se annonsen online", margin+32, y+8);
-    pdf.setFont("helvetica","normal"); pdf.setTextColor(107,114,128); pdf.setFontSize(8);
-    pdf.text(window.location.href, margin+32, y+15, { maxWidth: contentW-32 });
+    try {
+      if (image && selectedImageUrl) {
+        await setImageSourceAndWait(image, selectedImageUrl);
+      }
 
-    pdf.save(`${advertisement.title}.pdf`);
+      await waitForImageToLoad(image);
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+      const canvas = await html2canvas(printRoot, {
+        backgroundColor: "#ffffff",
+        imageTimeout: 15000,
+        logging: false,
+        scale: 2,
+        useCORS: true,
+      });
+
+      const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const availableWidth = pageWidth - margin * 2;
+      const availableHeight = pageHeight - margin * 2;
+      const scale = Math.min(availableWidth / canvas.width, availableHeight / canvas.height);
+      const renderWidth = canvas.width * scale;
+      const renderHeight = canvas.height * scale;
+      const imageDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+
+      pdf.addImage(
+        imageDataUrl,
+        "JPEG",
+        (pageWidth - renderWidth) / 2,
+        margin,
+        renderWidth,
+        renderHeight,
+        undefined,
+        "FAST"
+      );
+      pdf.save(`${advertisement.title}.pdf`);
+    } finally {
+      if (image && previousImageSrc) {
+        image.setAttribute("src", previousImageSrc);
+      } else if (image && !previousImageSrc) {
+        image.removeAttribute("src");
+      }
+
+      restoreInlineStyle(printSheet, previousSheetStyle);
+      restoreInlineStyle(printRoot, previousRootStyle);
+    }
   }
 
   function openModal() {
@@ -224,18 +271,31 @@ export default function AdvertisementDetailsPage() {
     } else {
       setPickedUrl(images[0].imageUrl);
     }
+
     setShowPrintModal(true);
   }
 
-  function handleModalConfirm(action) {
-    const url = pickedUrl;
-    setPrintImageUrl(url);
-    setShowPrintModal(false);
-    if (action === "save") {
-      savePdf(url);
-    } else {
-      requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
+  async function handleModalConfirm(action) {
+    const url = pickedUrl ?? images[0]?.imageUrl ?? null;
+    let printableImageUrl = url;
+
+    if (url) {
+      try {
+        printableImageUrl = await getPrintableImageUrl(url);
+      } catch {
+        printableImageUrl = resolveBackendAssetUrl(url);
+      }
     }
+
+    setPrintImageUrl(printableImageUrl);
+    setShowPrintModal(false);
+
+    if (action === "save") {
+      requestAnimationFrame(() => requestAnimationFrame(() => savePdf(printableImageUrl)));
+      return;
+    }
+
+    requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
   }
 
   async function handleReport() {
@@ -243,6 +303,7 @@ export default function AdvertisementDetailsPage() {
       alert("Beskriv problemet med minst 5 tecken.");
       return;
     }
+
     setReporting(true);
     try {
       await reportService.create(id, reportComment.trim());
@@ -262,9 +323,10 @@ export default function AdvertisementDetailsPage() {
 
   async function handleDeleteComment(commentId) {
     if (!confirm("Är du säker på att du vill ta bort kommentaren?")) return;
+
     try {
       await commentService.delete(commentId);
-      setComments((current) => current.filter((c) => c.commentId !== commentId));
+      setComments((current) => current.filter((comment) => comment.commentId !== commentId));
     } catch (err) {
       alert("Kunde inte ta bort kommentaren: " + (err.response?.data?.title || err.message));
     }
@@ -279,11 +341,12 @@ export default function AdvertisementDetailsPage() {
       alert("Du måste logga in för att kommentera.");
       return;
     }
+
     try {
       const created = await commentService.create(id, payload);
       setComments((current) => [
         ...current,
-        { 
+        {
           ...created,
           username: user?.username ?? user?.email,
         },
@@ -306,15 +369,15 @@ export default function AdvertisementDetailsPage() {
   }
 
   const furThemes = {
-    "Svart":   { bg: "#374151", border: "#1f2937", color: "#f9fafb" },
-    "Vit":     { bg: "#f9fafb", border: "#e5e7eb", color: "#374151" },
-    "Grå":     { bg: "#e5e7eb", border: "#9ca3af", color: "#374151" },
-    "Orange":  { bg: "#fff7ed", border: "#fed7aa", color: "#c2410c" },
-    "Brun":    { bg: "#fef0d0", border: "#e8c97a", color: "#7c3a00" },
-    "Beige":   { bg: "#fefce8", border: "#fde68a", color: "#854d0e" },
-    "Rödbrun": { bg: "#fef2e4", border: "#fca882", color: "#9a3412" },
-    "Blågrå":  { bg: "#f0f4f8", border: "#cbd5e1", color: "#334155" },
-    "Calico":  { bg: "#fff7ed", border: "#fed7aa", color: "#c2410c" },
+    Svart: { bg: "#374151", border: "#1f2937", color: "#f9fafb" },
+    Vit: { bg: "#f9fafb", border: "#e5e7eb", color: "#374151" },
+    Grå: { bg: "#e5e7eb", border: "#9ca3af", color: "#374151" },
+    Orange: { bg: "#fff7ed", border: "#fed7aa", color: "#c2410c" },
+    Brun: { bg: "#fef0d0", border: "#e8c97a", color: "#7c3a00" },
+    Beige: { bg: "#fefce8", border: "#fde68a", color: "#854d0e" },
+    Rödbrun: { bg: "#fef2e4", border: "#fca882", color: "#9a3412" },
+    Blågrå: { bg: "#f0f4f8", border: "#cbd5e1", color: "#334155" },
+    Calico: { bg: "#fff7ed", border: "#fed7aa", color: "#c2410c" },
   };
   const furColor = advertisement.cat?.furColor;
   const theme = furThemes[furColor] ?? { bg: "#f5ede4", border: "#dcc5b0", color: "#5c3622" };
@@ -332,7 +395,6 @@ export default function AdvertisementDetailsPage() {
 
   return (
     <section className="page" style={{ display: "grid", gap: 24, maxWidth: 800 }}>
-
       <ImageCarousel images={images} />
 
       <article className="card" style={{ display: "grid", gap: 14 }}>
@@ -342,13 +404,13 @@ export default function AdvertisementDetailsPage() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 4 }}>
           <div style={{ display: "grid", gap: 4 }}>
             <p style={{ margin: 0, color: "#9ca3af", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase" }}>Katt</p>
-            <p style={{ margin: 0 }}>{advertisement.cat?.name ?? "—"}</p>
+            <p style={{ margin: 0 }}>{advertisement.cat?.name ?? "-"}</p>
             <p style={{ margin: 0, color: "#6b7280" }}>{advertisement.cat?.breed ?? "Okänd ras"}</p>
             <p style={{ margin: 0, color: "#6b7280" }}>{advertisement.cat?.furColor ?? "Okänd färg"}</p>
           </div>
           <div style={{ display: "grid", gap: 4 }}>
             <p style={{ margin: 0, color: "#9ca3af", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase" }}>Plats</p>
-            <p style={{ margin: 0 }}>{advertisement.location?.city ?? "—"}</p>
+            <p style={{ margin: 0 }}>{advertisement.location?.city ?? "-"}</p>
             <p style={{ margin: 0, color: "#6b7280" }}>{advertisement.location?.area ?? ""}</p>
           </div>
           <div style={{ display: "grid", gap: 4 }}>
@@ -362,9 +424,15 @@ export default function AdvertisementDetailsPage() {
           <button
             onClick={openModal}
             style={{
-              background: "none", border: "1px solid #e5e7eb", color: "#6b7280",
-              borderRadius: 999, padding: "8px 18px", cursor: "pointer",
-              fontWeight: 600, fontSize: "0.875rem", transition: "all 0.15s ease",
+              background: "none",
+              border: "1px solid #e5e7eb",
+              color: "#6b7280",
+              borderRadius: 999,
+              padding: "8px 18px",
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: "0.875rem",
+              transition: "all 0.15s ease",
             }}
           >
             Skriv ut / Spara PDF
@@ -378,21 +446,30 @@ export default function AdvertisementDetailsPage() {
                 background: saved ? "#fff7ed" : "none",
                 border: `1px solid ${saved ? "#fed7aa" : "#e5e7eb"}`,
                 color: saved ? "#f97316" : "#9ca3af",
-                borderRadius: 999, padding: "8px 18px", cursor: "pointer",
-                fontWeight: 600, fontSize: "0.875rem",
+                borderRadius: 999,
+                padding: "8px 18px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: "0.875rem",
                 transition: "all 0.15s ease",
               }}
             >
-              {saved ? "♥ Sparad" : "♡ Spara annons"}
+              {saved ? "Sparad" : "Spara annons"}
             </button>
           )}
           {isAuthenticated && user?.accountId !== advertisement.accountId && (
             <button
               onClick={() => setShowReportModal(true)}
               style={{
-                background: "none", border: "1px solid #fca5a5", color: "#ef4444",
-                borderRadius: 999, padding: "8px 18px", cursor: "pointer",
-                fontWeight: 600, fontSize: "0.875rem", transition: "all 0.15s ease",
+                background: "none",
+                border: "1px solid #fca5a5",
+                color: "#ef4444",
+                borderRadius: 999,
+                padding: "8px 18px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: "0.875rem",
+                transition: "all 0.15s ease",
               }}
             >
               Rapportera
@@ -402,9 +479,14 @@ export default function AdvertisementDetailsPage() {
             <button
               onClick={handleDelete}
               style={{
-                background: "none", border: "1px solid #fca5a5", color: "#ef4444",
-                borderRadius: 999, padding: "8px 18px", cursor: "pointer",
-                fontWeight: 600, fontSize: "0.875rem",
+                background: "none",
+                border: "1px solid #fca5a5",
+                color: "#ef4444",
+                borderRadius: 999,
+                padding: "8px 18px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: "0.875rem",
               }}
             >
               Ta bort annons
@@ -424,44 +506,58 @@ export default function AdvertisementDetailsPage() {
         advertisement={advertisement}
         images={images}
         advertisementUrl={window.location.href}
-        selectedImageUrl={printImageUrl}
+        selectedImageUrl={printImageUrl ?? pickedUrl}
       />
 
       {showPrintModal && (
         <div
           onClick={() => setShowPrintModal(false)}
           style={{
-            position: "fixed", inset: 0, zIndex: 9997,
+            position: "fixed",
+            inset: 0,
+            zIndex: 9997,
             background: "rgba(0,0,0,0.55)",
-            display: "flex", alignItems: "center", justifyContent: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <div
-            onClick={(e) => e.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
             style={{
-              background: "white", borderRadius: 24, padding: 28,
-              width: "min(560px, 92vw)", maxHeight: "80vh",
-              display: "flex", flexDirection: "column", gap: 20,
+              background: "white",
+              borderRadius: 24,
+              padding: 28,
+              width: "min(560px, 92vw)",
+              maxHeight: "80vh",
+              display: "flex",
+              flexDirection: "column",
+              gap: 20,
               boxShadow: "0 24px 60px rgba(0,0,0,0.2)",
             }}
           >
             <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Välj bild</h3>
 
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-              gap: 12,
-              overflowY: "auto",
-            }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+                gap: 12,
+                overflowY: "auto",
+              }}
+            >
               {images.map((img) => (
                 <img
                   key={img.imageUrl}
-                  src={img.imageUrl}
+                  src={resolveBackendAssetUrl(img.imageUrl)}
                   alt=""
                   onClick={() => setPickedUrl(img.imageUrl)}
                   style={{
-                    width: "100%", aspectRatio: "1", objectFit: "cover",
-                    borderRadius: 12, cursor: "pointer",
+                    width: "100%",
+                    aspectRatio: "1",
+                    objectFit: "cover",
+                    borderRadius: 12,
+                    cursor: "pointer",
                     border: pickedUrl === img.imageUrl
                       ? "3px solid #f97316"
                       : "3px solid transparent",
@@ -478,9 +574,14 @@ export default function AdvertisementDetailsPage() {
               <button
                 onClick={() => setShowPrintModal(false)}
                 style={{
-                  background: "none", border: "1px solid #e5e7eb", color: "#6b7280",
-                  borderRadius: 999, padding: "9px 20px", cursor: "pointer",
-                  fontWeight: 600, fontSize: "0.875rem",
+                  background: "none",
+                  border: "1px solid #e5e7eb",
+                  color: "#6b7280",
+                  borderRadius: 999,
+                  padding: "9px 20px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
                 }}
               >
                 Avbryt
@@ -488,9 +589,14 @@ export default function AdvertisementDetailsPage() {
               <button
                 onClick={() => handleModalConfirm("print")}
                 style={{
-                  background: "none", border: "1px solid #e5e7eb", color: "#374151",
-                  borderRadius: 999, padding: "9px 20px", cursor: "pointer",
-                  fontWeight: 600, fontSize: "0.875rem",
+                  background: "none",
+                  border: "1px solid #e5e7eb",
+                  color: "#374151",
+                  borderRadius: 999,
+                  padding: "9px 20px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
                 }}
               >
                 Skriv ut
@@ -498,9 +604,14 @@ export default function AdvertisementDetailsPage() {
               <button
                 onClick={() => handleModalConfirm("save")}
                 style={{
-                  background: "#f97316", border: "none", color: "white",
-                  borderRadius: 999, padding: "9px 20px", cursor: "pointer",
-                  fontWeight: 600, fontSize: "0.875rem",
+                  background: "#f97316",
+                  border: "none",
+                  color: "white",
+                  borderRadius: 999,
+                  padding: "9px 20px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
                 }}
               >
                 Spara PDF
@@ -514,17 +625,25 @@ export default function AdvertisementDetailsPage() {
         <div
           onClick={() => setShowReportModal(false)}
           style={{
-            position: "fixed", inset: 0, zIndex: 9997,
+            position: "fixed",
+            inset: 0,
+            zIndex: 9997,
             background: "rgba(0,0,0,0.55)",
-            display: "flex", alignItems: "center", justifyContent: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <div
-            onClick={(e) => e.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
             style={{
-              background: "white", borderRadius: 24, padding: 28,
+              background: "white",
+              borderRadius: 24,
+              padding: 28,
               width: "min(480px, 92vw)",
-              display: "flex", flexDirection: "column", gap: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
               boxShadow: "0 24px 60px rgba(0,0,0,0.2)",
             }}
           >
@@ -534,23 +653,36 @@ export default function AdvertisementDetailsPage() {
             </p>
             <textarea
               value={reportComment}
-              onChange={(e) => setReportComment(e.target.value)}
+              onChange={(event) => setReportComment(event.target.value)}
               placeholder="T.ex. spam, felaktig information, olämpligt innehåll..."
               rows={4}
               style={{
-                width: "100%", boxSizing: "border-box",
-                border: "1px solid #e5e7eb", borderRadius: 12,
-                padding: "10px 14px", fontSize: "0.9rem",
-                fontFamily: "inherit", resize: "vertical", outline: "none",
+                width: "100%",
+                boxSizing: "border-box",
+                border: "1px solid #e5e7eb",
+                borderRadius: 12,
+                padding: "10px 14px",
+                fontSize: "0.9rem",
+                fontFamily: "inherit",
+                resize: "vertical",
+                outline: "none",
               }}
             />
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
               <button
-                onClick={() => { setShowReportModal(false); setReportComment(""); }}
+                onClick={() => {
+                  setShowReportModal(false);
+                  setReportComment("");
+                }}
                 style={{
-                  background: "none", border: "1px solid #e5e7eb", color: "#6b7280",
-                  borderRadius: 999, padding: "9px 20px", cursor: "pointer",
-                  fontWeight: 600, fontSize: "0.875rem",
+                  background: "none",
+                  border: "1px solid #e5e7eb",
+                  color: "#6b7280",
+                  borderRadius: 999,
+                  padding: "9px 20px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
                 }}
               >
                 Avbryt
@@ -559,9 +691,15 @@ export default function AdvertisementDetailsPage() {
                 onClick={handleReport}
                 disabled={reporting}
                 style={{
-                  background: "#ef4444", border: "none", color: "white",
-                  borderRadius: 999, padding: "9px 20px", cursor: "pointer",
-                  fontWeight: 600, fontSize: "0.875rem", opacity: reporting ? 0.6 : 1,
+                  background: "#ef4444",
+                  border: "none",
+                  color: "white",
+                  borderRadius: 999,
+                  padding: "9px 20px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  opacity: reporting ? 0.6 : 1,
                 }}
               >
                 {reporting ? "Skickar..." : "Skicka rapport"}
@@ -570,7 +708,6 @@ export default function AdvertisementDetailsPage() {
           </div>
         </div>
       )}
-
     </section>
   );
 }

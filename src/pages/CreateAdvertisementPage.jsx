@@ -242,7 +242,7 @@ export default function CreateAdvertisementPage() {
         }
       }
 
-      alert("Annons skapad!");
+      alert("Annons skickad för granskning. Den blir synlig när en admin har godkänt den.");
 
       setImages([]);
       setForm({

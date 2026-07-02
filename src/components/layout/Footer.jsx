@@ -33,14 +33,13 @@ export default function Footer() {
             </li>
             <li>
               <span className="site-footer__contact-label">Tech support</span>
-              <span>Sacad &amp; Georgia</span>
+              <span>support@catfinder.site</span>
             </li>
             <li>
               <span className="site-footer__contact-label">General questions</span>
-              <span>Mario</span>
             </li>
             <li>
-              <a href="mailto:support@catfinder.se">support@catfinder.se</a>
+              <a href="mailto:support@catfinder.se">ask@catfinder.site</a>
             </li>
           </ul>
         </div>

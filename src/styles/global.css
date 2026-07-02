@@ -1514,3 +1514,83 @@ body.cat-mode .navbar .btn::after {
     padding: 11px 14px;
   }
 }
+
+/* new final updated layout for mobile */
+
+/* Final mobile polish */
+@media (max-width: 640px) {
+  .page {
+    padding-top: 24px;
+  }
+
+  .auth-page {
+    min-height: auto;
+    padding: 24px 14px;
+    align-items: flex-start;
+  }
+
+  .auth-card {
+    max-width: 100%;
+    padding: 24px;
+    border-radius: 22px;
+  }
+
+  .auth-header h1 {
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+
+  .input {
+    font-size: 16px; /* prevents mobile browser zoom */
+  }
+
+  .navbar {
+    width: 94%;
+    gap: 10px;
+  }
+
+  .navbar-logo {
+    font-size: 1.9rem;
+  }
+
+  .navbar-right {
+    gap: 8px;
+  }
+
+  .navbar-right .btn,
+  .navbar-auth-link {
+    font-size: 0.9rem;
+  }
+
+  .navbar-links {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding-bottom: 4px;
+  }
+
+  .navbar-links a {
+    flex: 0 0 auto;
+  }
+
+  .card {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .grid {
+    gap: 18px;
+  }
+
+  .preview-section {
+    padding: 24px;
+  }
+
+  .preview-content h3 {
+    font-size: 1.55rem;
+  }
+
+  .hero-banner {
+    min-height: 480px;
+  }
+}

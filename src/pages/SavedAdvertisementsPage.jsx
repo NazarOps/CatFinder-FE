@@ -13,7 +13,7 @@ export default function SavedAdvertisementsPage() {
   } = useQuery({
     queryKey: ["savedAdvertisements", user?.accountId],
     queryFn: () => advertisementService.getSaved(user.accountId),
-    enabled: !! user?.accountId,
+    enabled: !!user?.accountId,
   });
 
   if (isLoading) {
@@ -42,7 +42,7 @@ export default function SavedAdvertisementsPage() {
             <AdvertisementCard
               key={advertisement.advertisementId}
               advertisement={advertisement}
-              isSaved={true}
+              isSaved
             />
           ))}
         </div>
