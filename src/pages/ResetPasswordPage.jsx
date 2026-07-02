@@ -3,13 +3,13 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "../services/authService";
 
-// ResetPasswordPage - form for setting a new password from a reset link
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const [form, setForm] = useState({
     email: searchParams.get("email") || "",
+    code: searchParams.get("code") || "",
     newPassword: "",
     confirmPassword: "",
   });
@@ -17,15 +17,15 @@ export default function ResetPasswordPage() {
   const resetPasswordMutation = useMutation({
     mutationFn: authService.resetPassword,
     onSuccess: () => {
-      alert("Losenordet ar uppdaterat. Du kan nu logga in.");
+      alert("Lösenordet är uppdaterat. Du kan nu logga in.");
       navigate("/login");
     },
     onError: (error) => {
       const errors = error.response?.data?.errors;
       const message = Array.isArray(errors) && errors.length > 0
         ? errors.join("\n")
-        : error.response?.data?.title || error.message || "Okant fel";
-      alert("Kunde inte aterstalla losenord:\n" + message);
+        : error.response?.data?.title || error.message || "Okänt fel";
+      alert("Kunde inte återställa lösenord:\n" + message);
     },
   });
 
@@ -41,14 +41,14 @@ export default function ResetPasswordPage() {
     event.preventDefault();
 
     if (form.newPassword !== form.confirmPassword) {
-      alert("Losenorden matchar inte.");
+      alert("Lösenorden matchar inte.");
       return;
     }
 
     resetPasswordMutation.mutate({
       email: form.email,
       code: form.code,
-      newPassword: form.newPassword
+      newPassword: form.newPassword,
     });
   }
 
@@ -57,9 +57,9 @@ export default function ResetPasswordPage() {
       <div className="auth-card">
         <div className="auth-header">
           <p className="auth-tag">CatFinder</p>
-          <h1>Aterstall losenord</h1>
+          <h1>Återställ lösenord</h1>
           <p>
-            Valj ett nytt losenord for ditt CatFinder-konto.
+            Välj ett nytt lösenord för ditt CatFinder-konto.
           </p>
         </div>
 
@@ -78,18 +78,17 @@ export default function ResetPasswordPage() {
 
           <div className="auth-field">
             <label>Återställningskod</label>
-              <input
-                className="input"
-                name="code"
-                value={form.code}
-                onChange={updateField}
-                required
-              />
+            <input
+              className="input"
+              name="code"
+              value={form.code}
+              onChange={updateField}
+              required
+            />
           </div>
-          
 
           <div className="auth-field">
-            <label>Nytt losenord</label>
+            <label>Nytt lösenord</label>
             <input
               className="input"
               type="password"
@@ -101,7 +100,7 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className="auth-field">
-            <label>Bekrafta losenord</label>
+            <label>Bekräfta lösenord</label>
             <input
               className="input"
               type="password"
@@ -118,14 +117,14 @@ export default function ResetPasswordPage() {
           >
             {resetPasswordMutation.isPending
               ? "Sparar..."
-              : "Aterstall losenord"}
+              : "Återställ lösenord"}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
-            Vill du prova igen?
-            <Link to="/forgotpassword"> Skicka ny lank</Link>
+            Vill du pröva igen?
+            <Link to="/forgotpassword"> Skicka ny länk</Link>
           </p>
         </div>
       </div>

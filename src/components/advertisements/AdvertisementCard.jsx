@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
 import { advertisementService } from "../../services/advertisementService";
 import { advertisementImageService } from "../../services/advertisementImageService";
+import { resolveBackendAssetUrl } from "../../services/api";
 
 const furThemes = {
   "Svart":   { bg: "#374151", border: "#1f2937", color: "#f9fafb" },
@@ -35,7 +36,9 @@ export default function AdvertisementCard({ advertisement, isSaved = false }) {
     enabled: hovered && !advertisement.primaryImageUrl,
   });
 
-  const previewImage = advertisement.primaryImageUrl ?? fetchedImages[0]?.imageUrl;
+  const previewImage = resolveBackendAssetUrl(
+    advertisement.primaryImageUrl ?? fetchedImages[0]?.imageUrl
+  );
 
   useEffect(() => {
     setSaved(isSaved);
@@ -121,7 +124,7 @@ export default function AdvertisementCard({ advertisement, isSaved = false }) {
         <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
           {advertisement.primaryImageUrl && (
             <img
-              src={advertisement.primaryImageUrl}
+              src={resolveBackendAssetUrl(advertisement.primaryImageUrl)}
               alt=""
               style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 10, flexShrink: 0, border: "1px solid #e5e7eb" }}
             />

@@ -9,17 +9,17 @@ export default function Navbar() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const isAdmin = user?.role === "Admin";
-  const catMode = useCatModeStore((s) => s.catMode);
-  const toggleCatMode = useCatModeStore((s) => s.toggle);
-  const soundEnabled = useSoundStore((s) => s.soundEnabled);
-  const toggleSound = useSoundStore((s) => s.toggle);
+  const catMode = useCatModeStore((state) => state.catMode);
+  const toggleCatMode = useCatModeStore((state) => state.toggle);
+  const soundEnabled = useSoundStore((state) => state.soundEnabled);
+  const toggleSound = useSoundStore((state) => state.toggle);
 
   function handleCatMode() {
     toggleCatMode();
     if (soundEnabled) {
       const audio = new Audio("/meow.mp3");
       audio.volume = 1.0;
-      audio.play().catch((e) => console.error("Meow failed:", e));
+      audio.play().catch((error) => console.error("Meow failed:", error));
     }
   }
 
@@ -84,7 +84,7 @@ export default function Navbar() {
               transition: "all 0.2s ease",
             }}
           >
-            {catMode ? "Cat Mode: Pa" : "Cat Mode: Av"}
+            {catMode ? "Cat Mode: På" : "Cat Mode: Av"}
           </button>
 
           {isAuthenticated ? (

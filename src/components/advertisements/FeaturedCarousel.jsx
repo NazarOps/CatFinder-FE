@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { advertisementImageService } from "../../services/advertisementImageService";
+import { resolveBackendAssetUrl } from "../../services/api";
 
 const typeLabel = { 0: "Försvunnen katt", 1: "Hittad katt" };
 
@@ -12,7 +13,9 @@ function CarouselSlide({ advertisement }) {
     enabled: !advertisement.primaryImageUrl,
   });
 
-  const imageUrl = advertisement.primaryImageUrl ?? images[0]?.imageUrl;
+  const imageUrl = resolveBackendAssetUrl(
+    advertisement.primaryImageUrl ?? images[0]?.imageUrl
+  );
 
   return (
     <article className="preview-card">

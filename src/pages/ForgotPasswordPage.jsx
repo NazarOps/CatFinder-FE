@@ -3,22 +3,21 @@ import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "../services/authService";
 
-// ForgotPasswordPage - form for requesting a password reset email
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
 
   const forgotPasswordMutation = useMutation({
     mutationFn: authService.forgotPassword,
     onSuccess: () => {
-      alert("Om kontot finns skickas en aterstallningslank till din email.");
+      alert("Om kontot finns skickas en återställningslänk till din email.");
       setEmail("");
     },
     onError: (error) => {
       const errors = error.response?.data?.errors;
       const message = Array.isArray(errors) && errors.length > 0
         ? errors.join("\n")
-        : error.response?.data?.title || error.message || "Okant fel";
-      alert("Kunde inte skicka aterstallningslank:\n" + message);
+        : error.response?.data?.title || error.message || "Okänt fel";
+      alert("Kunde inte skicka återställningslänk:\n" + message);
     },
   });
 
@@ -32,10 +31,10 @@ export default function ForgotPasswordPage() {
       <div className="auth-card">
         <div className="auth-header">
           <p className="auth-tag">CatFinder</p>
-          <h1>Glomt losenord</h1>
+          <h1>Glömt lösenord</h1>
           <p>
-            Ange din email sa skickar vi en lank for att aterstalla ditt
-            losenord.
+            Ange din email så skickar vi en länk för att återställa ditt
+            lösenord.
           </p>
         </div>
 
@@ -58,13 +57,13 @@ export default function ForgotPasswordPage() {
           >
             {forgotPasswordMutation.isPending
               ? "Skickar..."
-              : "Skicka aterstallningslank"}
+              : "Skicka återställningslänk"}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
-            Kom du pa losenordet?
+            Kom du på lösenordet?
             <Link to="/login"> Logga in</Link>
           </p>
         </div>
