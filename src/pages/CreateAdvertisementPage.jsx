@@ -4,41 +4,41 @@ import { advertisementImageService } from "../services/advertisementImageService
 import { posterService } from "../services/posterService";
 import { useAuthStore } from "../store/authStore";
 
-// CreateAdvertisementPage - formular for att skapa en ny annons
+// CreateAdvertisementPage - formulär för att skapa en ny annons
 export default function CreateAdvertisementPage() {
   const user = useAuthStore((state) => state.user);
 
   const cityAreas = {
-    Stockholm:    ["Sodermalm","Ostermalm","Kungsholmen","Vasastan","Norrmalm","Bromma","Spanga","Tensta","Rinkeby","Kista","Skarholmen","Liljeholmen","Hagersten","Alvsjo","Enskede","Arsta","Farsta","Skarpnack","Ragsved","Vallingby","Hasselby","Djurgarden","Lidingo","Nacka","Sollentuna"],
-    Goteborg:     ["Centrum","Majorna","Linnestaden","Hisingen","Orgryte","Harlanda","Bergsjon","Kortedala","Larjedalen","Lundby","Askim","Frolunda","Hogsbo","Biskopsgarden","Backa","Angered"],
-    Malmo:        ["Centrum","Limhamn","Husie","Hyllie","Kirseberg","Oxie","Rosengard","Sodra innerstaden","Vastra innerstaden","Fosie","Bunkeflostrand"],
-    Uppsala:      ["Centrum","Luthagen","Eriksberg","Gottsunda","Savja","Haga","Linnestaden","Stabby","Valsatra","Sunnersta"],
-    Linkoping:    ["Centrum","Ryd","Skaggetorp","Berga","Lambohov","Hjulsbro","Innerstaden","Vasastaden","Johannelund"],
-    Orebro:       ["Centrum","Adolfsberg","Baronbackarna","Brickeberg","Eyra","Oxhagen","Varberga","Vivalla","Hagaby"],
-    Vasteras:     ["Centrum","Hamre","Haga","Irsta","Pettersberg","Raby","Skultuna","Vasteras Centrum"],
-    Helsingborg:  ["Centrum","Dalhem","Fredriksdal","Hogaborg","Miatorp","Narlunda","Raa","Soder","Tagaborg"],
-    Norrkoping:   ["Centrum","Hageby","Klockaretorpet","Ljura","Marielund","Soder","Ostra"],
-    Jonkoping:    ["Centrum","Huskvarna","Raslatt","Oxnehaga","Norrahammar","Barnarp"],
-    Lund:         ["Centrum","Norra Faladen","Klostergarden","Linero","Kobjer","Martens Falad","Varpinge"],
-    Umea:         ["Centrum","Haga","Mariehem","Sandbacka","Tomtebo","Alidhem","Backen"],
-    Gavle:        ["Centrum","Satra","Bomhus","Hemlingby","Andersberg","Naringen"],
-    Boras:        ["Centrum","Norrby","Hassleholmen","Sjobo","Hulta","Gota"],
-    Eskilstuna:   ["Centrum","Froslunda","Skiftinge","Lagersberg","Rabergstorp","Torshalla"],
-    Karlstad:     ["Centrum","Orrholmen","Valsviken","Gruvlyckan","Kronoparken","Farjestad"],
-    Sundsvall:    ["Centrum","Sidsjo","Skonsberg","Njurunda","Timra","Skonsmon"],
-    Lulea:        ["Centrum","Bergnaset","Bjorkskatan","Hertson","Ranea","Gammelstad"],
-    Halmstad:     ["Centrum","Andersberg","Sondrum","Villsharad","Oskarstrom","Getinge"],
-    Vaxjo:        ["Centrum","Araby","Dalbo","Hovshaga","Soder","Teleborg"],
-    Ostersund:    ["Centrum","Froson","Lugnvik","Odenskog","Torvalla"],
+    Stockholm:    ["Södermalm","Östermalm","Kungsholmen","Vasastan","Norrmalm","Bromma","Spånga","Tensta","Rinkeby","Kista","Skärholmen","Liljeholmen","Hägersten","Älvsjö","Enskede","Årsta","Farsta","Skarpnäck","Rågsved","Vällingby","Hässelby","Djurgården","Lidingö","Nacka","Sollentuna"],
+    Göteborg:     ["Centrum","Majorna","Linnéstaden","Hisingen","Örgryte","Härlanda","Bergsjön","Kortedala","Lärjedalen","Lundby","Askim","Frölunda","Högsbo","Biskopsgården","Backa","Angered"],
+    Malmö:        ["Centrum","Limhamn","Husie","Hyllie","Kirseberg","Oxie","Rosengård","Södra innerstaden","Västra innerstaden","Fosie","Bunkeflostrand"],
+    Uppsala:      ["Centrum","Luthagen","Eriksberg","Gottsunda","Sävja","Håga","Linnéstaden","Stabby","Valsätra","Sunnersta"],
+    Linköping:    ["Centrum","Ryd","Skäggetorp","Berga","Lambohov","Hjulsbro","Innerstaden","Vasastaden","Johannelund"],
+    Örebro:       ["Centrum","Adolfsberg","Baronbackarna","Brickeberg","Eyra","Oxhagen","Varberga","Vivalla","Hagaby"],
+    Västerås:     ["Centrum","Hamre","Haga","Irsta","Pettersberg","Råby","Skultuna","Västerås Centrum"],
+    Helsingborg:  ["Centrum","Dalhem","Fredriksdal","Högaborg","Miatorp","Närlunda","Råå","Söder","Tågaborg"],
+    Norrköping:   ["Centrum","Hageby","Klockaretorpet","Ljura","Marielund","Söder","Östra"],
+    Jönköping:    ["Centrum","Huskvarna","Råslätt","Öxnehaga","Norrahammar","Barnarp"],
+    Lund:         ["Centrum","Norra Fäladen","Klostergården","Linero","Kobjer","Mårtens Fälad","Värpinge"],
+    Umeå:         ["Centrum","Haga","Mariehem","Sandbacka","Tomtebo","Ålidhem","Backen"],
+    Gävle:        ["Centrum","Sätra","Bomhus","Hemlingby","Andersberg","Näringen"],
+    Borås:        ["Centrum","Norrby","Hässleholmen","Sjöbo","Hulta","Göta"],
+    Eskilstuna:   ["Centrum","Fröslunda","Skiftinge","Lagersberg","Råbergstorp","Torshälla"],
+    Karlstad:     ["Centrum","Orrholmen","Välsviken","Gruvlyckan","Kronoparken","Färjestad"],
+    Sundsvall:    ["Centrum","Sidsjö","Skönsberg","Njurunda","Timrå","Skönsmon"],
+    Luleå:        ["Centrum","Bergnäset","Björkskatan","Hertsön","Råneå","Gammelstad"],
+    Halmstad:     ["Centrum","Andersberg","Söndrum","Villshärad","Oskarström","Getinge"],
+    Växjö:        ["Centrum","Araby","Dalbo","Hovshaga","Söder","Teleborg"],
+    Östersund:    ["Centrum","Frösön","Lugnvik","Odenskog","Torvalla"],
     Kalmar:       ["Centrum","Norrliden","Oxhagen","Tallhagen","Tegelviken"],
-    Kristianstad: ["Centrum","Gamlegarden","Nasby","Charlottesborg","Va"],
-    Falun:        ["Centrum","Halsinggarden","Hosjo","Kallviken","Lugnet"],
-    Borlange:     ["Centrum","Jakobsgardarna","Kvarnsveden","Sater","Tunabygden"],
-    Karlskrona:   ["Centrum","Bergasa","Lyckeby","Pottholmen","Rosenholm"],
-    Skovde:       ["Centrum","Haggum","Ryd","Timmersdala","Varsas"],
-    Sodertalje:   ["Centrum","Hovsjo","Jarna","Lina","Ronna","Saltskog"],
-    Trollhattan:  ["Centrum","Kronogarden","Lextorp","Sjuntorp","Velanda"],
-    Taby:         ["Centrum","Arninge","Gribbylund","Nasby Park","Viggbyholm"],
+    Kristianstad: ["Centrum","Gamlegården","Näsby","Charlottesborg","Vä"],
+    Falun:        ["Centrum","Hälsinggården","Hosjö","Källviken","Lugnet"],
+    Borlänge:     ["Centrum","Jakobsgårdarna","Kvarnsveden","Säter","Tunabygden"],
+    Karlskrona:   ["Centrum","Bergåsa","Lyckeby","Pottholmen","Rosenholm"],
+    Skövde:       ["Centrum","Häggum","Ryd","Timmersdala","Värsås"],
+    Södertälje:   ["Centrum","Hovsjö","Järna","Lina","Ronna","Saltskog"],
+    Trollhättan:  ["Centrum","Kronogården","Lextorp","Sjuntorp","Velanda"],
+    Täby:         ["Centrum","Arninge","Gribbylund","Näsby Park","Viggbyholm"],
   };
   const [images, setImages] = useState([]);
   const MAX_IMAGES = 5;
@@ -49,11 +49,11 @@ export default function CreateAdvertisementPage() {
   const [posterMessage, setPosterMessage] = useState(null);
 
   const VALID_CITIES = Object.keys(cityAreas);
-  const VALID_FUR_COLORS = ["Svart", "Vit", "Gra", "Orange", "Brun", "Beige", "Rodbrun", "Blagra", "Calico"];
+  const VALID_FUR_COLORS = ["Svart", "Vit", "Grå", "Orange", "Brun", "Beige", "Rödbrun", "Blågrå", "Calico"];
 
   async function analyzePoster(file) {
     if (!file || !file.type.startsWith("image/")) {
-      setPosterMessage({ type: "error", text: "Filen maste vara en bild (JPG, PNG, WebP, GIF)" });
+      setPosterMessage({ type: "error", text: "Filen måste vara en bild (JPG, PNG, WebP, GIF)" });
       return;
     }
     setPosterAnalyzing(true);
@@ -88,7 +88,7 @@ export default function CreateAdvertisementPage() {
       if (result.type === "Lost" || result.type === "Found") filled.push("Typ");
       if (result.catName)      filled.push("Kattens namn");
       if (result.catBreed)     filled.push("Ras");
-      if (result.catFurColor && VALID_FUR_COLORS.includes(result.catFurColor)) filled.push("Palsfarg");
+      if (result.catFurColor && VALID_FUR_COLORS.includes(result.catFurColor)) filled.push("Pälsfärg");
       if (result.city && VALID_CITIES.includes(result.city)) filled.push("Stad");
       if (result.contactPhoneNumber) filled.push("Telefon");
       if (result.contactEmail)       filled.push("Email");
@@ -96,10 +96,10 @@ export default function CreateAdvertisementPage() {
       if (filled.length > 0) {
         setPosterMessage({ type: "success", text: `Fyllde i: ${filled.join(", ")}` });
       } else {
-        setPosterMessage({ type: "warn", text: "Kunde inte hitta tillrackligt med information i affischen." });
+        setPosterMessage({ type: "warn", text: "Kunde inte hitta tillräckligt med information i affischen." });
       }
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.message || "Analysen misslyckades. Forsok igen.";
+      const msg = err?.response?.data?.error || err?.message || "Analysen misslyckades. Försök igen.";
       setPosterMessage({ type: "error", text: msg });
     } finally {
       setPosterAnalyzing(false);
@@ -108,10 +108,10 @@ export default function CreateAdvertisementPage() {
 
   function validate() {
     const errs = {};
-    if (!form.title.trim())       errs.title    = "Titel kravs";
-    if (!form.description.trim()) errs.description = "Beskrivning kravs";
-    if (!form.cat.furColor)       errs.furColor = "Valj en palsfarg";
-    if (!form.location.city)      errs.city     = "Valj en stad";
+    if (!form.title.trim())       errs.title    = "Titel krävs";
+    if (!form.description.trim()) errs.description = "Beskrivning krävs";
+    if (!form.cat.furColor)       errs.furColor = "Välj en pälsfärg";
+    if (!form.location.city)      errs.city     = "Välj en stad";
     const phone = form.contactPhoneNumbers.find(p => p.trim());
     if (phone && !/^\+?[\d\s\-()­]{7,20}$/.test(phone.trim())) {
       errs.phone = "Ange ett giltigt telefonnummer";
@@ -121,7 +121,7 @@ export default function CreateAdvertisementPage() {
 
   const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
 
-  function extractErrorMessage(error, fallback = "Okant fel") {
+  function extractErrorMessage(error, fallback = "Okänt fel") {
     const data = error?.response?.data;
     const validationErrors = data?.errors;
 
@@ -161,9 +161,9 @@ export default function CreateAdvertisementPage() {
         .join(", ");
 
       alert(
-        `Filformat stods ej: ${unsupportedNames}\n` +
-        "Tillatna format: JPG, PNG, WebP, GIF.\n" +
-        "HEIC/HEIF-bilder fran iPhone stods inte just nu."
+        `Filformat stöds ej: ${unsupportedNames}\n` +
+        "Tillåtna format: JPG, PNG, WebP, GIF.\n" +
+        "HEIC/HEIF-bilder från iPhone stöds inte just nu."
       );
       e.target.value = "";
       return;
@@ -271,7 +271,7 @@ export default function CreateAdvertisementPage() {
         },
       });
 
-      let submissionMessage = "Annons skickad for granskning. Den blir synlig nar en admin har godkant den.";
+      let submissionMessage = "Annons skickad för granskning. Den blir synlig när en admin har godkänt den.";
 
       if (images.length > 0 && created?.advertisementId) {
         const uploadResults = await Promise.allSettled(
@@ -295,9 +295,9 @@ export default function CreateAdvertisementPage() {
             .join("\n");
 
           submissionMessage =
-            "Annonsen skickades for granskning, men en eller flera bilder kunde inte laddas upp.\n\n" +
+            "Annonsen skickades för granskning, men en eller flera bilder kunde inte laddas upp.\n\n" +
             `${failureDetails}\n\n` +
-            "Vanliga orsaker ar filformat som inte stods, till exempel HEIC/HEIF fran iPhone.";
+            "Vanliga orsaker är filformat som inte stöds, till exempel HEIC/HEIF från iPhone.";
         }
       }
 
@@ -314,7 +314,7 @@ export default function CreateAdvertisementPage() {
         location: { city: "", area: "" },
       });
     } catch (error) {
-      const message = extractErrorMessage(error, "Okant fel");
+      const message = extractErrorMessage(error, "Okänt fel");
       alert("Kunde inte skapa annons:\n" + message);
     } finally {
       setIsSubmitting(false);
@@ -364,8 +364,8 @@ export default function CreateAdvertisementPage() {
             <span style={{ fontWeight: 600, color: "#f97316" }}>Analyserar affisch...</span>
           ) : (
             <>
-              <span style={{ fontWeight: 600, color: "#5c3622" }}>Dra och slapp en forsvunnen-katt-affisch har</span>
-              <span style={{ fontSize: "0.82rem", color: "#9ca3af" }}>eller klicka for att valja en bild - Claude AI fyller i formularet at dig</span>
+              <span style={{ fontWeight: 600, color: "#5c3622" }}>Dra och släpp en försvunnen-katt-affisch här</span>
+              <span style={{ fontSize: "0.82rem", color: "#9ca3af" }}>eller klicka för att välja en bild - Claude AI fyller i formuläret åt dig</span>
             </>
           )}
         </label>
@@ -407,10 +407,10 @@ export default function CreateAdvertisementPage() {
             color: "#5c3622",
           }}>Om katten</h2>
 
-          {/* Bilder langst upp */}
+          {/* Bilder längst upp */}
           <div>
             <label style={{ display: "block", fontWeight: 600, marginBottom: 8, color: "#374151" }}>
-              Bilder pa katten{" "}
+              Bilder på katten{" "}
               <span style={{ fontWeight: 400, color: "#9ca3af", fontSize: "0.85rem" }}>
                 ({images.length}/{MAX_IMAGES})
               </span>
@@ -441,7 +441,7 @@ export default function CreateAdvertisementPage() {
                   cursor: "pointer",
                 }}>
                   <span className="btn btn-orange" style={{ padding: "8px 14px", fontSize: "0.8rem", gap: 4, pointerEvents: "none" }}>
-                    <span>+</span> Valj bild
+                    <span>+</span> Välj bild
                   </span>
                   <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple onChange={handleImageAdd} style={{ display: "none" }} />
                 </label>
@@ -450,7 +450,7 @@ export default function CreateAdvertisementPage() {
           </div>
 
           <select className="input" name="type" value={form.type} onChange={updateField}>
-            <option value="Lost">Forsvunnen katt</option>
+            <option value="Lost">Försvunnen katt</option>
             <option value="Found">Upphittad katt</option>
           </select>
 
@@ -470,18 +470,18 @@ export default function CreateAdvertisementPage() {
 
           <div>
             <label style={{ display: "block", fontWeight: 600, marginBottom: 8, color: "#374151" }}>
-              Palsfarg{form.cat.furColor && <span style={{ marginLeft: 8, fontWeight: 400, color: "#6b7280" }}>- {form.cat.furColor}</span>}
+              Pälsfärg{form.cat.furColor && <span style={{ marginLeft: 8, fontWeight: 400, color: "#6b7280" }}>- {form.cat.furColor}</span>}
             </label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
               {[
                 { name: "Svart",   hex: "#1c1c1c" },
                 { name: "Vit",     hex: "#f5f5f0" },
-                { name: "Gra",     hex: "#9ca3af" },
+                { name: "Grå",     hex: "#9ca3af" },
                 { name: "Orange",  hex: "#f97316" },
                 { name: "Brun",    hex: "#92400e" },
                 { name: "Beige",   hex: "#fde68a" },
-                { name: "Rodbrun", hex: "#b45309" },
-                { name: "Blagra",  hex: "#6b7280" },
+                { name: "Rödbrun", hex: "#b45309" },
+                { name: "Blågrå",  hex: "#6b7280" },
                 { name: "Calico",  hex: "linear-gradient(135deg,#f97316 33%,#1c1c1c 33%,#1c1c1c 66%,#f5f5f0 66%)" },
               ].map(({ name, hex }) => (
                 <button
@@ -517,36 +517,36 @@ export default function CreateAdvertisementPage() {
 
           <div>
           <select className="input" name="location.city" value={form.location.city} onChange={updateField} style={errors.city ? { borderColor: "#ef4444" } : {}}>
-            <option value="">Valj stad...</option>
+            <option value="">Välj stad...</option>
             <option>Stockholm</option>
-            <option>Goteborg</option>
-            <option>Malmo</option>
+            <option>Göteborg</option>
+            <option>Malmö</option>
             <option>Uppsala</option>
-            <option>Linkoping</option>
-            <option>Orebro</option>
-            <option>Vasteras</option>
+            <option>Linköping</option>
+            <option>Örebro</option>
+            <option>Västerås</option>
             <option>Helsingborg</option>
-            <option>Norrkoping</option>
-            <option>Jonkoping</option>
+            <option>Norrköping</option>
+            <option>Jönköping</option>
             <option>Lund</option>
-            <option>Umea</option>
-            <option>Gavle</option>
-            <option>Boras</option>
+            <option>Umeå</option>
+            <option>Gävle</option>
+            <option>Borås</option>
             <option>Eskilstuna</option>
-            <option>Sodertalje</option>
+            <option>Södertälje</option>
             <option>Karlstad</option>
-            <option>Taby</option>
-            <option>Vaxjo</option>
+            <option>Täby</option>
+            <option>Växjö</option>
             <option>Halmstad</option>
             <option>Sundsvall</option>
-            <option>Lulea</option>
-            <option>Trollhattan</option>
-            <option>Ostersund</option>
-            <option>Borlange</option>
+            <option>Luleå</option>
+            <option>Trollhättan</option>
+            <option>Östersund</option>
+            <option>Borlänge</option>
             <option>Falun</option>
             <option>Kalmar</option>
             <option>Kristianstad</option>
-            <option>Skovde</option>
+            <option>Skövde</option>
             <option>Karlskrona</option>
           </select>
           {errors.city && <span style={{ color: "#ef4444", fontSize: "0.8rem" }}>{errors.city}</span>}
@@ -559,7 +559,7 @@ export default function CreateAdvertisementPage() {
             disabled={!form.location.city}
           >
             <option value="">
-              {form.location.city ? "Valj omrade..." : "Valj en stad forst"}
+              {form.location.city ? "Välj område..." : "Välj en stad först"}
             </option>
             {(cityAreas[form.location.city] ?? []).map((area) => (
               <option key={area}>{area}</option>
@@ -572,7 +572,7 @@ export default function CreateAdvertisementPage() {
                 type="button"
                 onClick={() => addContactField("contactPhoneNumbers")}
                 style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: "0.82rem", fontWeight: 500, padding: 0 }}
-              >+ Lagg till fler...</button>
+              >+ Lägg till fler...</button>
             </div>
             {form.contactPhoneNumbers.map((phone, i) => (
               <div key={i} style={{ display: "flex", gap: 8 }}>
@@ -607,7 +607,7 @@ export default function CreateAdvertisementPage() {
                 type="button"
                 onClick={() => addContactField("contactEmails")}
                 style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: "0.82rem", fontWeight: 500, padding: 0 }}
-              >+ Lagg till fler...</button>
+              >+ Lägg till fler...</button>
             </div>
             {form.contactEmails.map((email, i) => (
               <div key={i} style={{ display: "flex", gap: 8 }}>
