@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { advertisementService } from "../services/advertisementService";
 import { advertisementImageService } from "../services/advertisementImageService";
 import { posterService } from "../services/posterService";
@@ -121,11 +121,50 @@ export default function CreateAdvertisementPage() {
 
   const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
 
+  function extractErrorMessage(error, fallback = "Okänt fel") {
+    const data = error?.response?.data;
+    const validationErrors = data?.errors;
+
+    if (Array.isArray(validationErrors) && validationErrors.length > 0) {
+      return validationErrors.join("\n");
+    }
+
+    if (typeof data === "string" && data.trim()) {
+      return data;
+    }
+
+    if (typeof data?.title === "string" && data.title.trim()) {
+      return data.title;
+    }
+
+    if (typeof data?.error === "string" && data.error.trim()) {
+      return data.error;
+    }
+
+    if (typeof error?.message === "string" && error.message.trim()) {
+      return error.message;
+    }
+
+    return fallback;
+  }
+
   function handleImageAdd(e) {
     const files = Array.from(e.target.files);
-    const unsupported = files.filter(f => !ACCEPTED_TYPES.includes(f.type));
+    const unsupported = files.filter((file) => {
+      const contentType = file.type?.toLowerCase();
+      return !contentType || !ACCEPTED_TYPES.includes(contentType);
+    });
+
     if (unsupported.length > 0) {
-      alert(`Filformat stöds ej: ${unsupported.map(f => f.name).join(", ")}\nTillåtna format: JPG, PNG, WebP, GIF`);
+      const unsupportedNames = unsupported
+        .map((file) => file.type ? `${file.name} (${file.type})` : file.name)
+        .join(", ");
+
+      alert(
+        `Filformat stöds ej: ${unsupportedNames}\n` +
+        "Tillåtna format: JPG, PNG, WebP, GIF.\n" +
+        "HEIC/HEIF-bilder från iPhone stöds inte just nu."
+      );
       e.target.value = "";
       return;
     }
@@ -232,17 +271,37 @@ export default function CreateAdvertisementPage() {
         },
       });
 
+      let submissionMessage = "Annons skickad för granskning. Den blir synlig när en admin har godkänt den.";
+
       if (images.length > 0 && created?.advertisementId) {
-        for (const img of images) {
-          try {
-            await advertisementImageService.upload(created.advertisementId, img.file);
-          } catch {
-            // image upload failed — ad was still created
+        const uploadResults = await Promise.allSettled(
+          images.map((img) => advertisementImageService.upload(created.advertisementId, img.file))
+        );
+
+        const failedUploads = uploadResults.flatMap((result, index) => {
+          if (result.status === "fulfilled") {
+            return [];
           }
+
+          return [{
+            fileName: images[index]?.file?.name || `Bild ${index + 1}`,
+            message: extractErrorMessage(result.reason, "Uppladdningen misslyckades."),
+          }];
+        });
+
+        if (failedUploads.length > 0) {
+          const failureDetails = failedUploads
+            .map((failure) => `- ${failure.fileName}: ${failure.message}`)
+            .join("\n");
+
+          submissionMessage =
+            "Annonsen skickades för granskning, men en eller flera bilder kunde inte laddas upp.\n\n" +
+            `${failureDetails}\n\n` +
+            "Vanliga orsaker är filformat som inte stöds, till exempel HEIC/HEIF från iPhone.";
         }
       }
 
-      alert("Annons skickad för granskning. Den blir synlig när en admin har godkänt den.");
+      alert(submissionMessage);
 
       setImages([]);
       setForm({
@@ -255,10 +314,7 @@ export default function CreateAdvertisementPage() {
         location: { city: "", area: "" },
       });
     } catch (error) {
-      const errors = error.response?.data?.errors;
-      const message = Array.isArray(errors) && errors.length > 0
-        ? errors.join("\n")
-        : error.response?.data?.title || error.message || "Okänt fel";
+      const message = extractErrorMessage(error, "Okänt fel");
       alert("Kunde inte skapa annons:\n" + message);
     } finally {
       setIsSubmitting(false);
@@ -267,7 +323,7 @@ export default function CreateAdvertisementPage() {
 
   return (
     <section className="page">
-      {/* ── Poster Analysis Drop Zone (hidden until OpenAI key is configured) ── */}
+      {/* -- Poster Analysis Drop Zone (hidden until OpenAI key is configured) -- */}
       {false && <div style={{ maxWidth: 700, marginBottom: 24 }}>
         <label
           onDragOver={e => { e.preventDefault(); setPosterDragOver(true); }}
@@ -303,13 +359,13 @@ export default function CreateAdvertisementPage() {
               if (file) analyzePoster(file);
             }}
           />
-          <span style={{ fontSize: "2rem" }}>📋</span>
+          <span style={{ fontSize: "2rem" }}>[poster]</span>
           {posterAnalyzing ? (
             <span style={{ fontWeight: 600, color: "#f97316" }}>Analyserar affisch...</span>
           ) : (
             <>
               <span style={{ fontWeight: 600, color: "#5c3622" }}>Dra och släpp en försvunnen-katt-affisch här</span>
-              <span style={{ fontSize: "0.82rem", color: "#9ca3af" }}>eller klicka för att välja en bild — Claude AI fyller i formuläret åt dig</span>
+              <span style={{ fontSize: "0.82rem", color: "#9ca3af" }}>eller klicka för att välja en bild - Claude AI fyller i formuläret åt dig</span>
             </>
           )}
         </label>
@@ -338,7 +394,7 @@ export default function CreateAdvertisementPage() {
 
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: 24, maxWidth: 700 }}>
 
-        {/* ── Katt-kort ── */}
+        {/* -- Katt-kort -- */}
         <article className="card" style={{ display: "grid", gap: 18 }}>
           <h2 style={{
             margin: "-24px -24px 0 -24px",
@@ -373,7 +429,7 @@ export default function CreateAdvertisementPage() {
                       border: "none", cursor: "pointer", fontSize: "0.75rem",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
-                  >✕</button>
+                  >x</button>
                 </div>
               ))}
 
@@ -414,7 +470,7 @@ export default function CreateAdvertisementPage() {
 
           <div>
             <label style={{ display: "block", fontWeight: 600, marginBottom: 8, color: "#374151" }}>
-              Pälsfärg{form.cat.furColor && <span style={{ marginLeft: 8, fontWeight: 400, color: "#6b7280" }}>— {form.cat.furColor}</span>}
+              Pälsfärg{form.cat.furColor && <span style={{ marginLeft: 8, fontWeight: 400, color: "#6b7280" }}>- {form.cat.furColor}</span>}
             </label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
               {[
@@ -446,7 +502,7 @@ export default function CreateAdvertisementPage() {
           </div>
         </article>
 
-        {/* ── Plats & Kontakt-kort ── */}
+        {/* -- Plats & Kontakt-kort -- */}
         <article className="card" style={{ display: "grid", gap: 18 }}>
           <h2 style={{
             margin: "-24px -24px 0 -24px",
@@ -537,7 +593,7 @@ export default function CreateAdvertisementPage() {
                       fontSize: "0.85rem", color: "#9ca3af",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
-                  >✕</button>
+                  >x</button>
                 )}
               </div>
             ))}
@@ -573,7 +629,7 @@ export default function CreateAdvertisementPage() {
                       fontSize: "0.85rem", color: "#9ca3af",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
-                  >✕</button>
+                  >x</button>
                 )}
               </div>
             ))}
@@ -592,3 +648,6 @@ export default function CreateAdvertisementPage() {
     </section>
   );
 }
+
+
+
