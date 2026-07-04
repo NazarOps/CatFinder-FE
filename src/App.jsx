@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { useSoundStore } from "./store/soundStore";
+import { useAuthStore } from "./store/authStore";
 import MainLayout from "./components/layout/MainLayout";
 import ProtectedRoute from "./components/routing/ProtectedRoute";
 import AdminProtectedRoute from "./components/routing/AdminProtectedRoute";
@@ -20,6 +21,11 @@ import NotFoundPage from "./pages/NotFoundPage";
 // App - huvudkomponent med alla routes
 export default function App() {
   const soundEnabled = useSoundStore((s) => s.soundEnabled);
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
+
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   useEffect(() => {
     let ctx = null;

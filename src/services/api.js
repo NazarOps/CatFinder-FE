@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useAuthStore } from "../store/authStore";
 
 const devApiTarget = import.meta.env.VITE_DEV_API_TARGET || "http://localhost:5051";
 const devApiUrl = "/api";
@@ -50,3 +51,14 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) {
+      useAuthStore.getState().logout();
+    }
+
+    return Promise.reject(error);
+  }
+);

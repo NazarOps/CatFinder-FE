@@ -20,6 +20,7 @@ export default function LoginPage() {
       const authData = data.data;
       setAuth({
         token: authData.token,
+        expiresAt: authData.expiresAt,
         user: {
           accountId: authData.accountId,
           username: authData.username,
